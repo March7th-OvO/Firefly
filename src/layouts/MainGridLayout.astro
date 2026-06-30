@@ -127,7 +127,25 @@ const getRandomSubtitle = () => {
 	}
 	return subtitle;
 };
+
+const splitBannerTitle = (title?: string, accent?: string) => {
+	if (!title || !accent) return null;
+
+	const startIndex = title.indexOf(accent);
+	if (startIndex === -1) return null;
+
+	return {
+		before: title.slice(0, startIndex),
+		accent,
+		after: title.slice(startIndex + accent.length),
+	};
+};
+
 const randomSubtitle = getRandomSubtitle();
+const splitHomeTitle = splitBannerTitle(
+	backgroundWallpaper.common?.homeText?.title,
+	backgroundWallpaper.common?.homeText?.titleAccent,
+);
 
 // 主页横幅文本只在首页且全局开关为 true 时显示，不区分设备
 const homeTextEnable = backgroundWallpaper.common?.homeText?.enable;
@@ -617,7 +635,17 @@ const hasMultipleImages =
                 <div class="flex flex-col">
                     {backgroundWallpaper.common?.homeText?.title && (
                         <div class="banner-title font-bold text-white mb-2 lg:mb-4 leading-tight" style={{ '--banner-title-size': backgroundWallpaper.common.homeText.titleSize || "3rem" }}>
-                            {backgroundWallpaper.common.homeText.title}
+                            {splitHomeTitle ? (
+								<>
+									{splitHomeTitle.before}
+									<span class="banner-title-accent">
+										{splitHomeTitle.accent}
+									</span>
+									{splitHomeTitle.after}
+								</>
+							) : (
+								backgroundWallpaper.common.homeText.title
+							)}
                         </div>
                     )}
                     {backgroundWallpaper.common?.homeText?.subtitle && (
@@ -917,4 +945,3 @@ const hasMultipleImages =
   }
 
 </style>
-

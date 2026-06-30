@@ -7,6 +7,7 @@ import FancyboxManager from "@components/features/FancyboxManager.astro";
 import FontSetup from "@components/features/FontSetup.astro";
 import MusicManager from "@components/features/MusicManager.astro";
 import SakuraEffect from "@components/features/SakuraEffect.astro";
+import GoldenSpiralBackground from "@components/common/GoldenSpiralBackground.astro";
 import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
 
 import {
@@ -566,6 +567,7 @@ const siteLang = lang.replace("_", "-");
   >
 
     <div id="progress-bar"></div>
+    <GoldenSpiralBackground />
 
     <!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
     {shouldShowTopHighlight && <div class="top-gradient-highlight" />}

@@ -7,6 +7,7 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "node scripts/generate-icons.js && npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist",
+    "deploy": "pnpm build && ssh furinafans \"rm -rf /var/www/Furinafans/*\" && scp -r dist/. furinafans:/var/www/Furinafans/",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",

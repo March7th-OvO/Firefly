@@ -65,6 +65,7 @@ export type FontSelectionConfig = {
 	selected: string | string[];
 	/** 各区域独立字体 CSS 变量名（留空则使用全局 selected 字体） */
 	bannerTitleFont?: string;
+	bannerTitleAccentFont?: string;
 	bannerSubtitleFont?: string;
 	navbarTitleFont?: string;
 	/** 代码块字体 CSS 变量名（用于代码高亮和等宽字体场景） */

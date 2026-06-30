@@ -31,6 +31,7 @@ export function collectUsedFontCssVars(
 	}
 
 	if (config.bannerTitleFont) used.add(config.bannerTitleFont);
+	if (config.bannerTitleAccentFont) used.add(config.bannerTitleAccentFont);
 	if (config.bannerSubtitleFont) used.add(config.bannerSubtitleFont);
 	if (config.navbarTitleFont) used.add(config.navbarTitleFont);
 	if (config.codeFont) used.add(config.codeFont);

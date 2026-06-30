@@ -1,1 +1,57 @@
-这里是HTML注入示例，你可以在这个文件中添加自定义的HTML内容
+<style>
+    .footer-beian {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .footer-beian__item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+    .footer-beian__icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: middle;
+    }
+    .footer-beian__separator {
+        opacity: 0.5;
+    }
+</style>
+<div class="footer-beian">
+    <a class="footer-beian__item" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+        豫ICP备2026021347号
+    </a>
+    <span class="footer-beian__separator" aria-hidden="true">|</span>
+    <a
+            class="footer-beian__item"
+            href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=41061102000494"
+            target="_blank"
+            rel="noopener noreferrer"
+    >
+        <img class="footer-beian__icon" src="/assets/images/gongan-icon.png" alt="公安备案" />
+        <span>豫公网安备 41061102000494号</span>
+    </a>
+    <span class="footer-beian__separator" aria-hidden="true">|</span>
+    <a class="footer-beian__item" href="https://icp.gov.moe/" target="_blank" rel="noopener noreferrer">
+        萌ICP备20261013号
+    </a>
+    <span class="footer-beian__separator" aria-hidden="true">|</span>
+    <a
+            class="footer-beian__item"
+            href="https://ipc.xilianai.com/ipc/%E6%98%9FIPC%E5%A4%8720261013%E5%8F%B7"
+            target="_blank"
+            rel="noopener noreferrer"
+    >
+        <img
+                class="footer-beian__icon footer-beian__icon--rounded"
+                src="https://ipc.xilianai.com/favicon.png"
+                alt=""
+                aria-hidden="true"
+        />
+        <span>星IPC备20261013号</span>
+    </a>
+</div>

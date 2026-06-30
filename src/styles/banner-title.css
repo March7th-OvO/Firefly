@@ -11,6 +11,13 @@
     font-family: var(--font-banner-title, inherit);
 }
 
+.banner-title-accent {
+    display: inline-block;
+    font-family: var(--font-banner-title-accent, var(--font-banner-title, inherit));
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
 .banner-subtitle {
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
     /* 独立字体设置，通过 fontConfig.bannerSubtitleFont 配置 */

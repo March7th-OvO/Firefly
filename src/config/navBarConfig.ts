@@ -77,7 +77,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		icon: "material-symbols:link",
 		// 子菜单
 		children: [
-			{
+			/*{
 				name: "GitHub",
 				url: "https://github.com/CuteLeaf/Firefly",
 				external: true,
@@ -100,7 +100,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				url: "https://docs-firefly.cuteleaf.cn",
 				external: true,
 				icon: "material-symbols:docs",
-			},
+			},*/
 		],
 	});
 

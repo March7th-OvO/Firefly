@@ -1,24 +1,12 @@
 ---
-/**
- * FontSetup.astro
- *
- * 使用 Astro Font API（<Font /> 组件）统一管理字体加载。
- * 字体定义在 fontConfig.ts 的 fonts 数组中配置，
- * 本组件负责渲染 <Font /> 标签并设置 body 字体和区域覆盖 CSS 变量。
- *
- * 字体的 fallback 由各字体定义中的 fallbacks 字段控制（Astro Font API 处理），
- */
 import { Font } from "astro:assets";
-import { fontConfig } from "@/config";
-import { collectUsedFontCssVars } from "@/utils/fontHelper";
+import { fontConfig, fontsList } from "@/config";
+import { collectUsedFontCssVars, toPublicPath } from "@/utils/fontHelper";
 
-// 使用共享的工具函数收集所有需要加载的 CSS 变量名（selected + 各区域字体，去重）
-// enable=false 时返回空集，不会加载任何字体
 const allCssVars = fontConfig.enable
 	? collectUsedFontCssVars(fontConfig)
 	: new Set<string>();
 
-// 统一解析 selected 为数组（用于后续 body font-family 和 preload 判断）
 const selectedIds: string[] =
 	fontConfig.enable && fontConfig.selected
 		? Array.isArray(fontConfig.selected)
@@ -26,45 +14,163 @@ const selectedIds: string[] =
 			: [fontConfig.selected]
 		: [];
 
-// 生成 body 的 font-family 值
-// 每个字体的 fallback 由其在 fonts 中的 fallbacks 字段控制
-// 这里只拼接 CSS 变量引用，末尾加系统字体作为最终保底
 const SYSTEM_FONT_STACK =
 	"system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
-const selectedFontVars = selectedIds.filter((v) => v !== "system");
+const selectedFontVars = selectedIds.filter((value) => value !== "system");
 const bodyFontFamily =
 	selectedFontVars.length > 0
-		? [...selectedFontVars.map((v) => `var(${v})`), SYSTEM_FONT_STACK].join(
+		? [...selectedFontVars.map((value) => `var(${value})`), SYSTEM_FONT_STACK].join(
 				", ",
 			)
 		: SYSTEM_FONT_STACK;
 
-// 各区域字体 CSS 变量值
-const bannerTitleFontVar = fontConfig.enable
-	? fontConfig.bannerTitleFont || ""
+const fontByCssVar = new Map(fontsList.map((font) => [font.cssVariable, font]));
+const fontEntries = Array.from(allCssVars)
+	.map((cssVar) => ({
+		cssVar,
+		font: fontByCssVar.get(cssVar),
+	}))
+	.filter(
+		(entry): entry is { cssVar: string; font: (typeof fontsList)[number] } =>
+			Boolean(entry.font),
+	);
+
+const astroFontEntries = fontEntries.filter((entry) => entry.font.provider !== "local");
+const localFontEntries = fontEntries.filter((entry) => entry.font.provider === "local");
+const subsetFontVars = new Set(Object.keys(fontConfig.subsetFonts || {}));
+
+const bannerTitleFontVar = fontConfig.enable ? fontConfig.bannerTitleFont || "" : "";
+const bannerTitleAccentFontVar = fontConfig.enable
+	? fontConfig.bannerTitleAccentFont || ""
 	: "";
 const bannerSubtitleFontVar = fontConfig.enable
 	? fontConfig.bannerSubtitleFont || ""
 	: "";
-const navbarTitleFontVar = fontConfig.enable
-	? fontConfig.navbarTitleFont || ""
-	: "";
+const navbarTitleFontVar = fontConfig.enable ? fontConfig.navbarTitleFont || "" : "";
+
+const getSourceUrl = (source: string | URL | { url: string | URL }) =>
+	typeof source === "string" || source instanceof URL
+		? source.toString()
+		: source.url.toString();
+
+const getFontMimeType = (source: string) => {
+	if (source.startsWith("__SUBSET_FONT_")) return "font/woff2";
+	const cleanSource = source.split("?")[0].toLowerCase();
+	if (cleanSource.endsWith(".woff2")) return "font/woff2";
+	if (cleanSource.endsWith(".woff")) return "font/woff";
+	if (cleanSource.endsWith(".otf")) return "font/otf";
+	if (cleanSource.endsWith(".eot")) return "application/vnd.ms-fontobject";
+	return "font/ttf";
+};
+
+const getFontFormat = (source: string) => {
+	if (source.startsWith("__SUBSET_FONT_")) return "woff2";
+	const cleanSource = source.split("?")[0].toLowerCase();
+	if (cleanSource.endsWith(".woff2")) return "woff2";
+	if (cleanSource.endsWith(".woff")) return "woff";
+	if (cleanSource.endsWith(".otf")) return "opentype";
+	if (cleanSource.endsWith(".eot")) return "embedded-opentype";
+	return "truetype";
+};
+
+const getSubsetFontId = (fontName: string, weight?: string | number) =>
+	`${fontName}-${weight || "default"}`.toLowerCase().replace(/\s+/g, "-");
+
+const getVariantSourceValue = (
+	cssVar: string,
+	fontName: string,
+	variant: { weight?: string | number; src: Array<string | URL | { url: string | URL }> },
+	source: string | URL | { url: string | URL },
+) => {
+	const publicPath = toPublicPath(getSourceUrl(source));
+	if (!publicPath) return null;
+
+	if (import.meta.env.PROD && subsetFontVars.has(cssVar)) {
+		return `__SUBSET_FONT_${getSubsetFontId(fontName, variant.weight)}__`;
+	}
+
+	return publicPath;
+};
+
+const localFontFacesCss = localFontEntries
+	.flatMap(({ cssVar, font }) =>
+		font.options?.variants?.map((variant) => {
+			const sources = variant.src
+				.map((source) =>
+					getVariantSourceValue(cssVar, font.name, variant, source),
+				)
+				.filter((value): value is string => Boolean(value))
+				.map((value) => `url("${value}") format("${getFontFormat(value)}")`)
+				.join(", ");
+
+			if (!sources) return "";
+
+			return `@font-face {
+  font-family: "${font.name}";
+  src: ${sources};
+  font-display: ${font.display || "swap"};
+  ${variant.weight ? `font-weight: ${variant.weight};` : ""}
+  ${variant.style ? `font-style: ${variant.style};` : ""}
+}`;
+		}) || [],
+	)
+	.filter(Boolean)
+	.join("\n");
+
+const localFontVariableCss = localFontEntries
+	.map(({ cssVar, font }) => {
+		const fallbackList = font.fallbacks?.length ? `, ${font.fallbacks.join(", ")}` : "";
+		return `${cssVar}: "${font.name}"${fallbackList};`;
+	})
+	.join("\n      ");
+
+const localPreloadLinks = localFontEntries.flatMap(({ cssVar, font }) => {
+	if (!selectedFontVars.includes(cssVar)) return [];
+
+	return (
+		font.options?.variants
+			?.map((variant) => {
+				const href = getVariantSourceValue(
+					cssVar,
+					font.name,
+					variant,
+					variant.src[0],
+				);
+				if (!href) return null;
+
+				return {
+					href,
+					type: getFontMimeType(href),
+				};
+			})
+			.filter((value): value is { href: string; type: string } => Boolean(value)) || []
+	);
+});
 ---
 
-<!-- Astro Font API: 自动下载、缓存并生成优化的 @font-face -->
-{Array.from(allCssVars).map((cssVar) => (
-  <Font
-    cssVariable={cssVar as any}
-    preload={selectedFontVars.includes(cssVar)}
-  />
+{astroFontEntries.map(({ cssVar }) => (
+	<Font cssVariable={cssVar as any} preload={selectedFontVars.includes(cssVar)} />
 ))}
 
-<!-- 区域字体 CSS 变量 + body 字体 -->
-{fontConfig.enable && (bannerTitleFontVar || bannerSubtitleFontVar || navbarTitleFontVar || selectedFontVars.length > 0) && (
-  <style
-    set:html={`
-    ${bannerTitleFontVar || bannerSubtitleFontVar || navbarTitleFontVar ? `:root {
+{localFontFacesCss && <style set:html={localFontFacesCss}></style>}
+{localFontVariableCss && <style set:html={`:root {\n      ${localFontVariableCss}\n    }`}></style>}
+{localPreloadLinks.map(({ href, type }) => (
+	<link rel="preload" href={href} as="font" type={type} crossorigin />
+))}
+
+{fontConfig.enable &&
+	(
+		bannerTitleFontVar ||
+		bannerTitleAccentFontVar ||
+		bannerSubtitleFontVar ||
+		navbarTitleFontVar ||
+		selectedFontVars.length > 0
+	) && (
+		<style
+			set:html={`
+    ${bannerTitleFontVar || bannerTitleAccentFontVar || bannerSubtitleFontVar || navbarTitleFontVar ? `:root {
       ${bannerTitleFontVar ? `--font-banner-title: var(${bannerTitleFontVar}, inherit);` : ""}
+      ${bannerTitleAccentFontVar ? `--font-banner-title-accent: var(${bannerTitleAccentFontVar}, var(--font-banner-title, inherit));` : ""}
       ${bannerSubtitleFontVar ? `--font-banner-subtitle: var(${bannerSubtitleFontVar}, inherit);` : ""}
       ${navbarTitleFontVar ? `--font-navbar-title: var(${navbarTitleFontVar}, inherit);` : ""}
     }` : ""}
@@ -73,18 +179,17 @@ const navbarTitleFontVar = fontConfig.enable
       font-family: ${bodyFontFamily};
     }
   `}
-  />
-)}
+		/>
+	)}
 
 <script>
-  // 字体加载完成事件
-  if (document.fonts && typeof document.fonts.ready !== "undefined") {
-    document.fonts.ready
-      .then(() => {
-        document.dispatchEvent(new CustomEvent("fontsLoaded"));
-      })
-      .catch((error) => {
-        console.warn("Font loading failed:", error);
-      });
-  }
+	if (document.fonts && typeof document.fonts.ready !== "undefined") {
+		document.fonts.ready
+			.then(() => {
+				document.dispatchEvent(new CustomEvent("fontsLoaded"));
+			})
+			.catch((error) => {
+				console.warn("Font loading failed:", error);
+			});
+	}
 </script>
