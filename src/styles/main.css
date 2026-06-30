@@ -69,27 +69,33 @@ html {
 }
 
 @layer components {
+    /* View Transitions API 主题切换动画 */
+    /* 根视图快照保持正常混合，避免明暗主题叠加时出现异常反色 */
     ::view-transition-old(root),
     ::view-transition-new(root) {
         mix-blend-mode: normal;
     }
     
+    /* 统一控制根视图过渡时长和缓动曲线 */
     ::view-transition-group(root) {
         animation-duration: 0.5s;
         animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     }
     
+    /* 旧视图保持静止，作为底层等待新主题圆形扩散覆盖 */
     ::view-transition-old(root) {
         animation: none;
         z-index: 0;
     }
     
+    /* 新视图从点击坐标开始圆形扩散，坐标由主题切换逻辑写入 CSS 变量 */
     ::view-transition-new(root) {
         animation: theme-circle-expand 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
         clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%));
         z-index: 1;
     }
     
+    /* 圆形半径扩展到 150%，确保从任意点击位置都能覆盖完整视口 */
     @keyframes theme-circle-expand {
         0% {
             clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%));

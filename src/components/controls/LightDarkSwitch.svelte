@@ -28,11 +28,14 @@ type WindowWithSwup = Window & { swup?: SwupInstance };
 let mode: LIGHT_DARK_MODE = $state(LIGHT_MODE);
 let displayedMode: LIGHT_DARK_MODE = $state(LIGHT_MODE); // 显示的实际主题（在system模式下会随系统变化）
 
+// 切换主题模式；用户点击触发时传入鼠标坐标，用于圆形扩散动画的起点
 function switchScheme(newMode: LIGHT_DARK_MODE, event?: MouseEvent) {
 	mode = newMode;
 	if (event) {
+		// 菜单点击切换时使用 View Transitions 圆形扩散动画
 		setThemeWithAnimation(newMode, event.clientX, event.clientY);
 	} else {
+		// 程序化切换或无坐标来源时保持原来的直接切换逻辑
 		setTheme(newMode);
 	}
 	updateDisplayedMode();
