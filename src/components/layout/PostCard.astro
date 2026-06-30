@@ -68,6 +68,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
 <div
   class:list={[
     "post-card-wrapper",
+    "post-card-spotlight",
     hasCover ? "has-cover" : "no-cover",
     pinned ? "pinned" : "",
     "card-base flex flex-col-reverse w-full rounded-(--radius-large) overflow-hidden relative",
@@ -212,6 +213,86 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
 </div>
 
 <style define:vars={{ coverWidth, descriptionClampLines }}>
+  .post-card-spotlight {
+    isolation: isolate;
+  }
+
+  .post-card-spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 280ms ease;
+    background: radial-gradient(
+      320px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgba(37, 99, 235, 0.14),
+      rgba(37, 99, 235, 0.06) 42%,
+      transparent 72%
+    );
+  }
+
+  .post-card-spotlight:hover::after {
+    opacity: 1;
+  }
+
+  .post-card-spotlight > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+    .post-card-spotlight::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      z-index: 2;
+      border-radius: inherit;
+      padding: 1.5px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 280ms ease;
+      background: radial-gradient(
+        210px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+        rgba(37, 99, 235, 0.72),
+        rgba(180, 126, 36, 0.34) 52%,
+        transparent 78%
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+    }
+
+    .post-card-spotlight:hover::before {
+      opacity: 1;
+    }
+  }
+
+  :global(html.dark) .post-card-spotlight::after {
+    background: radial-gradient(
+      320px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgba(96, 165, 250, 0.16),
+      rgba(96, 165, 250, 0.07) 42%,
+      transparent 72%
+    );
+  }
+
+  :global(html.dark) .post-card-spotlight::before {
+    background: radial-gradient(
+      210px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgba(147, 197, 253, 0.76),
+      rgba(226, 190, 110, 0.38) 52%,
+      transparent 78%
+    );
+  }
+
   .description-clamped {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -369,3 +450,34 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
     display: flex !important;
   }
 </style>
+
+<script>
+  if (window.matchMedia("(pointer: fine)").matches) {
+    let rafId = 0;
+    let lastEvent: PointerEvent | null = null;
+
+    const applyPostCardSpotlight = () => {
+      rafId = 0;
+      const event = lastEvent;
+      if (!event) return;
+
+      const target = event.target instanceof Element ? event.target : null;
+      const card = target?.closest<HTMLElement>(".post-card-spotlight");
+      if (!card) return;
+
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
+      card.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
+    };
+
+    document.addEventListener(
+      "pointermove",
+      (event) => {
+        if (event.pointerType && event.pointerType !== "mouse") return;
+        lastEvent = event;
+        if (!rafId) rafId = requestAnimationFrame(applyPostCardSpotlight);
+      },
+      { passive: true },
+    );
+  }
+</script>
