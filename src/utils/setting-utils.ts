@@ -152,7 +152,7 @@ let systemThemeListener:
 	| ((e: MediaQueryListEvent | MediaQueryList) => void)
 	| null = null;
 
-export function setTheme(theme: LIGHT_DARK_MODE): void {
+function setThemeCore(theme: LIGHT_DARK_MODE): void {
 	// 检查是否在浏览器环境中
 	if (
 		typeof localStorage === "undefined" ||
@@ -174,6 +174,37 @@ export function setTheme(theme: LIGHT_DARK_MODE): void {
 		// 如果切换其他模式，移除系统主题监听
 		cleanupSystemThemeListener();
 	}
+}
+
+export function setTheme(theme: LIGHT_DARK_MODE): void {
+	setThemeCore(theme);
+}
+
+export function setThemeWithAnimation(
+	theme: LIGHT_DARK_MODE,
+	clickX: number,
+	clickY: number,
+): void {
+	if (typeof document === "undefined") {
+		setThemeCore(theme);
+		return;
+	}
+
+	document.documentElement.style.setProperty("--click-x", `${clickX}px`);
+	document.documentElement.style.setProperty("--click-y", `${clickY}px`);
+
+	const viewTransitionDocument = document as Document & {
+		startViewTransition?: (callback: () => void) => void;
+	};
+
+	if (typeof viewTransitionDocument.startViewTransition === "function") {
+		viewTransitionDocument.startViewTransition(() => {
+			setThemeCore(theme);
+		});
+		return;
+	}
+
+	setThemeCore(theme);
 }
 
 // 设置系统主题监听器
