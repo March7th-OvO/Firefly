@@ -1,70 +1,67 @@
 ---
-title: 为 FurinaFans 暗色模式切换实现圆形扩散动画
+title: 黑暗模式圆形扩散动画：从初版实现到二次修正
 published: 2026-06-20
-description: "记录使用 View Transitions API + clip-path: circle() 替换传统淡入淡出，实现从点击位置圆形扩散的主题切换动画。"
+updated: 2026-07-01
+description: "记录 FurinaFans 使用 View Transitions API 与 clip-path: circle() 实现黑暗模式圆形扩散动画，并在 review 后补齐极端视口、键盘触发和减少动态效果等边界处理。"
 tags: [Astro, View Transitions API, CSS, 视觉交互, 前端]
 category: 开发记录
 draft: false
 ---
 
-主题切换是一个几乎所有博客都会有的功能，但绝大多数实现都是生硬的「闪切」—— 点击按钮，页面瞬间从亮变暗，中间没有过渡。稍微讲究一点的做法是给 `html` 加一个 transition，让背景色和文字色在几百毫秒内平滑过渡。Firefly 之前用的 View Transitions API 淡入淡出方案已经比「闪切」好很多，但它仍然是一个全局的、均质的过渡 —— 动画从页面整体发生，没有方向感，也没有「谁在驱动这次变化」的叙事。
+主题切换是博客里很常见的功能，但它很容易被做成一个只有结果、没有过程的交互：点击按钮，页面瞬间从浅色变成深色，或者从深色变回浅色。功能是完成了，视觉上却像是整页突然被替换掉。
 
-这次的目标是把主题切换做成**圆形扩散**效果：从鼠标点击的位置，一个新主题的「圆」向外扩散，直到覆盖整个视口。用户点击按钮的一瞬间，视觉上就能感知到「新主题从这里长出来」。
+FurinaFans 原本已经使用了 View Transitions API 做淡入淡出，比直接闪切好一些。但淡入淡出仍然是一个全局、均质的变化：页面整体慢慢换色，动画没有方向，也看不出这次变化是由哪个交互触发的。
 
-## 一、三个切入点
+这次想做的是另一种反馈：**新主题从用户点击的位置向外扩散**。当用户点击主题菜单项时，一个属于新主题的圆从点击点展开，直到覆盖整个视口。它不是单纯让颜色变得更平滑，而是把「用户在哪里触发了主题切换」也纳入动画叙事。
 
-实现之前，先把问题拆清楚：
+这篇文章记录完整过程：初版如何实现，review 后发现了哪些边界问题，以及最终如何补齐。
 
-1. **动画起点** —— 用户点击主题按钮的坐标必须被捕获，并作为 `circle()` 的圆心。
-2. **动画机制** —— 用什么 API 能在主题切换（DOM 修改）的同时驱动 clip-path 动画。
-3. **兜底兼容** —— 不支持的浏览器怎么办。
+## 一、为什么用 View Transitions API
 
-这三个点各自有各自的技术选择，不能混在一起想。
+主题切换本质上是一次 DOM 状态变化：给 `<html>` 添加或移除 `dark` class，同时更新代码块主题、localStorage、系统主题监听等状态。难点在于，动画要发生在「旧页面状态」和「新页面状态」之间。
 
-## 二、View Transitions API 的基本模型
-
-View Transitions API 的核心是 `document.startViewTransition(callback)`。调用时：
-
-- 浏览器**截取当前页面**作为「旧视图」快照。
-- 执行 `callback`（里面做 DOM 修改，比如给 `<html>` 加 `dark` class）。
-- 浏览器**截取修改后的页面**作为「新视图」快照。
-- 将两张快照分别放在 `::view-transition-old(root)` 和 `::view-transition-new(root)` 两个伪元素里，开放给 CSS 控制动画。
-
-关键在于：**旧视图和新视图是独立的两张截图**，你可以在 CSS 里对它们分别施加任意动画，互不干扰。
-
-Firefly 此前已经用了这个 API，但只在 CSS 里写了 fade-in / fade-out。这次要做的，是把 `::view-transition-new(root)` 的动画从 opacity 淡入，改成 clip-path 圆形展开。
-
-## 三、核心实现
-
-### 3.1 捕获点击坐标
-
-在 Svelte 的 `LightDarkSwitch` 组件中，让按钮的 `onclick` 传递 `MouseEvent`：
-
-```svelte
-<!-- 之前 -->
-onclick={() => switchScheme(DARK_MODE)}
-
-<!-- 之后 -->
-onclick={(e) => switchScheme(DARK_MODE, e)}
-```
-
-在 `switchScheme` 中提取坐标并调用带动画的切换函数：
+View Transitions API 正好解决这个问题。调用：
 
 ```ts
-function switchScheme(newMode: LIGHT_DARK_MODE, e?: MouseEvent) {
+document.startViewTransition(() => {
+    // 在这里修改 DOM 状态
+});
+```
+
+浏览器会做四件事：
+
+1. 截取当前页面，作为旧视图快照。
+2. 执行回调，应用新的 DOM 状态。
+3. 截取更新后的页面，作为新视图快照。
+4. 把两张快照暴露为 `::view-transition-old(root)` 和 `::view-transition-new(root)`，交给 CSS 控制动画。
+
+这意味着主题切换不需要手写额外遮罩层，也不需要用 `setTimeout` 猜测渲染时机。JS 负责切换主题状态，CSS 负责定义两张快照如何过渡，职责边界比较干净。
+
+## 二、初版实现：从点击点扩散
+
+初版的思路很直接：
+
+1. 在主题菜单点击时拿到 `MouseEvent`。
+2. 把 `event.clientX` / `event.clientY` 写入 CSS 变量。
+3. 用 `clip-path: circle()` 让新视图从这个坐标展开。
+
+Svelte 组件里的入口大致是这样：
+
+```ts
+function switchScheme(newMode: LIGHT_DARK_MODE, event?: MouseEvent) {
     mode = newMode;
-    if (e) {
-        setThemeWithAnimation(newMode, e.clientX, e.clientY);
+
+    if (event) {
+        setThemeWithAnimation(newMode, event.clientX, event.clientY);
     } else {
-        setTheme(newMode);  // 程序化触发时不用动画
+        setTheme(newMode);
     }
+
     updateDisplayedMode();
 }
 ```
 
-### 3.2 用 startViewTransition 驱动
-
-`setting-utils.ts` 中新增 `setThemeWithAnimation`：
+主题工具函数中再包一层动画入口：
 
 ```ts
 export function setThemeWithAnimation(
@@ -72,34 +69,28 @@ export function setThemeWithAnimation(
     clickX: number,
     clickY: number,
 ): void {
-    // 将点击坐标写入 CSS 变量
     document.documentElement.style.setProperty("--click-x", `${clickX}px`);
     document.documentElement.style.setProperty("--click-y", `${clickY}px`);
 
     if (document.startViewTransition) {
         document.startViewTransition(() => {
-            setThemeCore(theme);  // 实际改 dark class + 写 localStorage
+            setThemeCore(theme);
         });
-    } else {
-        setThemeCore(theme);  // 兜底
+        return;
     }
+
+    setThemeCore(theme);
 }
 ```
 
-这里有一个重要的设计决策：把 `setTheme` 拆成两层。外层 `setTheme` / `setThemeWithAnimation` 负责「怎么切换」（有无动画、什么动画），内层 `setThemeCore` 负责「切换什么」（改 DOM class、写 localStorage）。这样拆分后，所有调用方 —— 包括系统主题监听、程序化切换、其他组件 —— 都能毫无感知地继续使用 `setTheme`，不会因为引入动画而破坏现有逻辑。
-
-### 3.3 CSS：从 fade 到 circle
-
-`main.css` 中的改动是核心：
+CSS 里旧视图不动，新视图做圆形展开：
 
 ```css
-/* 旧视图不动，保持底层 */
 ::view-transition-old(root) {
     animation: none;
     z-index: 0;
 }
 
-/* 新视图从点击位置圆形扩散 */
 ::view-transition-new(root) {
     animation: theme-circle-expand 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
     clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%));
@@ -107,47 +98,241 @@ export function setThemeWithAnimation(
 }
 
 @keyframes theme-circle-expand {
-    0%   { clip-path: circle(0%   at var(--click-x, 50%) var(--click-y, 50%)); }
-    100% { clip-path: circle(150% at var(--click-x, 50%) var(--click-y, 50%)); }
+    0% {
+        clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%));
+    }
+
+    100% {
+        clip-path: circle(150% at var(--click-x, 50%) var(--click-y, 50%));
+    }
 }
 ```
 
-`circle()` 的半径从 `0%` 到 `150%`，保证覆盖视口最远角。CSS 变量 `--click-x` / `--click-y` 由 JS 在触发前写入，没写入时 fallback 到 `50% 50%`（屏幕中心）。
+这版能跑，也能看到预期中的圆形扩散效果。但它有一个问题：它只验证了「正常鼠标点击、普通屏幕比例、默认动效设置」这条路径。
 
-动画曲线选 `cubic-bezier(0.4, 0, 0.2, 1)` —— 这是一个先快后慢的缓出曲线。圆形扩散动画本身带有「加速展开」的物理感，用 ease-out 曲线可以让后期减速显得更自然，而不是戛然而止。
+review 之后发现，真实交互还需要覆盖更多边界。
 
-整个动画逻辑其实很简单：**旧截图保持不动，新截图从圆心处出现并逐渐覆盖整个视口**。旧截图被新截图「吃掉」的视觉效果，本质上就是 clip-path 圆越来越大。
+## 三、二次修改：补齐三个边界
 
-## 四、旧代码中可以删掉的遗留问题
+Sourcery review 提醒了三个值得处理的问题：
 
-在改 CSS 的过程中注意到一个细节：之前的 `::view-transition-old(root)` 和 `::view-transition-new(root)` 共享了动画时长和缓动函数的声明，然后各自的 `animation-name` 又分别绑定到 `theme-fade-out` 和 `theme-fade-in`。这种写法在淡入淡出的场景下没问题，但改成圆形扩散后，旧视图根本不需要任何动画 —— 它只需要安静地待在底层等待被覆盖。所以新代码中只给 `new` 赋动画，`old` 直接 `animation: none`，结构更清晰。
+1. `circle(150%)` 在极宽屏、极高屏或角落点击时，不一定稳定覆盖整个视口。
+2. 键盘触发 click 事件时，`clientX` / `clientY` 可能是 `0`，动画会从左上角扩散。
+3. 用户如果设置了 `prefers-reduced-motion: reduce`，不应该看到完整的 0.5s 圆形扩散动画。
 
-## 五、兜底策略
+这些不是核心思路错误，而是工程实现里必须补齐的细节。
 
-View Transitions API 目前只在 Chromium 系浏览器中可用（Chrome、Edge、Arc 等）。Firefox 和 Safari 的用户量虽然不大，但不能让他们在点击主题按钮后没有任何反应。
+## 四、半径从 150% 改成 150vmax
 
-所以兜底逻辑很简单：
+初版用的是：
+
+```css
+circle(150% at var(--click-x, 50%) var(--click-y, 50%))
+```
+
+看起来 150% 已经很大，但 `clip-path: circle()` 的百分比半径在不同视口比例和实现细节下并不如视口单位直观。尤其当圆心在角落附近，最远点可能比想象中更远。
+
+最终改为：
+
+```css
+@keyframes theme-circle-expand {
+    0% {
+        clip-path: circle(0 at var(--click-x, 50%) var(--click-y, 50%));
+    }
+
+    100% {
+        clip-path: circle(150vmax at var(--click-x, 50%) var(--click-y, 50%));
+    }
+}
+```
+
+`vmax` 取视口宽高中较大的那个值。`150vmax` 比百分比半径更明确，也更适合「从任意位置覆盖完整视口」这个目标。
+
+同时初始状态也从 `0%` 改成 `0`。这里表达的是半径为零，不需要百分比参与计算。
+
+## 五、键盘触发不能从左上角扩散
+
+主题菜单项是按钮。用户可以用鼠标点击，也可以用键盘 Tab 聚焦后按 Enter 或 Space 触发。
+
+鼠标点击时，`event.clientX` 和 `event.clientY` 是有意义的。但键盘触发的 click 事件里，这两个值可能是 `0`。如果直接把 `(0, 0)` 当作圆心，动画就会从屏幕左上角扩散，和用户实际聚焦的菜单项完全不一致。
+
+因此二次修改里新增了 `getEventOrigin`：
 
 ```ts
-if (document.startViewTransition) {
-    // 有 View Transitions → 圆形扩散动画
-} else {
-    setThemeCore(theme);  // 没有 → 直接切换，无动画
+function getEventOrigin(event?: MouseEvent): { x: number; y: number } | undefined {
+    if (!event) {
+        return undefined;
+    }
+
+    if (event.detail > 0 && (event.clientX > 0 || event.clientY > 0)) {
+        return { x: event.clientX, y: event.clientY };
+    }
+
+    const target = event.currentTarget as HTMLElement | null;
+    if (!target) {
+        return undefined;
+    }
+
+    const rect = target.getBoundingClientRect();
+    return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+    };
 }
 ```
 
-不做 fallback 动画。在 Safari/Firefox 上做一个 JS 驱动的 canvas 圆扩散虽然技术上可行，但代价太大 —— 引入额外的 DOM 元素、管理动画生命周期、处理高 DPI 渲染 —— 对于「主题切换动画」这样一个锦上添花的功能来说不划算。简洁比完美更重要。
+这里有两个判断：
 
-## 六、用 astro check 而非 type-check 验证
+- `event.detail > 0`：通常表示来自鼠标点击，而不是键盘触发的合成 click。
+- `clientX > 0 || clientY > 0`：避免把无效的 `(0, 0)` 当成真实点击点。
 
-Firefly 项目启用了 `tsc --noEmit --isolatedDeclarations`，这是一个相当严格的检查模式。本次改动在 `setting-utils.ts` 中新增了两个函数（`setThemeWithAnimation` 和 `setThemeCore`），好在已有的 type-check 错误集中在其他文件的 `--isolatedDeclarations` 合规性上，新代码没有引入额外问题。
+如果是键盘触发，就退回到当前菜单项元素的中心点。这样动画仍然从「用户正在操作的控件」附近扩散，而不是从页面角落突然出现。
 
-真正管用的是 `pnpm check`（`astro check`），它负责检查所有 `.astro` 和 `.svelte` 文件的类型正确性。改完三个文件后跑 `astro check`，157 个文件 0 errors 0 warnings，可以放心提交。
+调用处也随之调整：
 
----
+```ts
+function switchScheme(newMode: LIGHT_DARK_MODE, event?: MouseEvent) {
+    mode = newMode;
 
-回顾这次改动，最满意的地方不是动画效果本身 —— 圆形扩散这种效果网上有很多现成的 demo —— 而是 **View Transitions API 在工程中恰好是一个正确的选择**。
+    const origin = getEventOrigin(event);
+    if (origin) {
+        setThemeWithAnimation(newMode, origin.x, origin.y);
+    } else {
+        setTheme(newMode);
+    }
 
-它不需要你手动管理 DOM 节点，不需要在 JS 里写 setTimeout 猜测渲染时机，不需要处理两张截图之间的闪烁。浏览器替你做了最麻烦的事：截图、合成、渲染。你只需要在 CSS 里决定这两张截图之间怎么过渡。
+    updateDisplayedMode();
+}
+```
 
-而 `clip-path: circle()` 配合 CSS 变量传递坐标，刚好把「动画原点」和「动画形式」解耦了。坐标由 JS 在真实用户交互中捕获，动画形式由 CSS 声明式定义，两者各司其职，互不污染。这种分工在 UI 开发中是一种很舒服的模式。
+## 六、工具函数也要有兜底
+
+组件里做了事件来源判断，并不代表工具函数可以完全信任入参。`setThemeWithAnimation` 是导出的工具函数，未来其他地方也可能调用它。
+
+所以二次修改里把坐标参数改成可选，并在内部做最后兜底：
+
+```ts
+export function setThemeWithAnimation(
+    theme: LIGHT_DARK_MODE,
+    clickX?: number,
+    clickY?: number,
+): void {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+        setThemeCore(theme);
+        return;
+    }
+
+    const hasValidOrigin =
+        typeof clickX === "number" &&
+        typeof clickY === "number" &&
+        Number.isFinite(clickX) &&
+        Number.isFinite(clickY) &&
+        (clickX > 0 || clickY > 0);
+    const originX = hasValidOrigin ? clickX : window.innerWidth / 2;
+    const originY = hasValidOrigin ? clickY : window.innerHeight / 2;
+
+    document.documentElement.style.setProperty("--click-x", `${originX}px`);
+    document.documentElement.style.setProperty("--click-y", `${originY}px`);
+
+    const viewTransitionDocument = document as Document & {
+        startViewTransition?: (callback: () => void) => void;
+    };
+
+    if (typeof viewTransitionDocument.startViewTransition === "function") {
+        viewTransitionDocument.startViewTransition(() => {
+            setThemeCore(theme);
+        });
+        return;
+    }
+
+    setThemeCore(theme);
+}
+```
+
+这层兜底解决了两个问题：
+
+1. 如果调用方没传坐标，动画从视口中心开始。
+2. 如果传入的是无效数字、`NaN` 或 `(0, 0)`，也不会从左上角误扩散。
+
+同时，不支持 View Transitions API 的浏览器仍然直接调用 `setThemeCore(theme)`。动画能力不应该影响主题切换功能本身。
+
+## 七、减少动态效果偏好
+
+`prefers-reduced-motion` 是一个很容易被忽略的点。圆形扩散本身是视觉冲击比较强的动画，对减少动态效果的用户来说，完整播放 0.5s 并不合适。
+
+最终 CSS 里增加了：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(root),
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 0.01ms;
+        animation-name: none;
+    }
+
+    ::view-transition-new(root) {
+        clip-path: none;
+    }
+}
+```
+
+这里不只是把动画时间压短，还额外把新视图的 `clip-path` 清掉。原因是：如果只取消动画名，新视图仍可能保留初始的 `clip-path: circle(0 ...)`，导致新快照被裁剪不可见。
+
+这也是 review 后修改时最值得注意的细节之一。减少动态效果不是「动画播快一点」这么简单，还要确保禁用动画后页面最终状态仍然完整可见。
+
+## 八、为什么保留无动画入口
+
+这次没有把所有主题切换都改成 `setThemeWithAnimation`。初始化、系统主题变化、程序化调用仍然走原来的 `setTheme`：
+
+```ts
+export function setTheme(theme: LIGHT_DARK_MODE): void {
+    setThemeCore(theme);
+}
+```
+
+原因很简单：不是所有主题变化都来自用户点击。
+
+- 页面加载时根据 localStorage 初始化主题，不应该播放一次扩散动画。
+- 系统主题变化是外部环境变化，不应该假装有一个页面内点击点。
+- 其他程序化调用可能没有明确交互来源，直接切换更稳定。
+
+所以最终结构是：
+
+- `setThemeCore`：只负责真正应用主题、保存配置、维护系统主题监听。
+- `setTheme`：无动画入口，给初始化和程序化调用使用。
+- `setThemeWithAnimation`：用户交互入口，在支持 View Transitions API 时播放圆形扩散。
+
+这个拆分让动画成为增强体验，而不是主题系统的前置依赖。
+
+## 九、最终效果和验证
+
+这次最终版本覆盖了几条关键路径：
+
+1. Chrome / Edge 中鼠标点击浅色、深色、跟随系统主题，动画从点击位置扩散。
+2. 键盘触发主题菜单项时，动画从菜单项中心点扩散，不会从左上角出现。
+3. 极宽屏、极高屏、角落点击时，`150vmax` 能覆盖完整视口。
+4. 开启减少动态效果偏好后，不播放完整圆形扩散动画。
+5. 不支持 View Transitions API 的浏览器仍能直接切换主题。
+6. 初始化和系统主题变化不触发动画。
+
+本地验证使用的是 `astro check`，结果为 0 errors / 0 warnings / 0 hints。
+
+没有把 `pnpm build` 当作这次文章和 PR 修正的常规验证步骤，是因为项目构建脚本会生成 LQIP、字体子集等派生产物，容易把与本次主题动画无关的文件混进改动里。对这类三文件范围的前端交互修改，`astro check` 加手动交互验证更符合当前提交边界。
+
+## 十、回看这次改动
+
+初版证明了方向：View Transitions API + `clip-path: circle()` 很适合做主题切换的圆形扩散。
+
+二次修改补齐的是工程质量：极端视口、键盘触发、减少动态效果、无效坐标兜底。这些细节单独看都不大，但它们决定了一个动画是「demo 能跑」，还是「能放进真实站点里长期维护」。
+
+这也是这次实现最有价值的地方：动画本身并不复杂，真正需要认真处理的是它和输入方式、用户偏好、浏览器能力、主题系统入口之间的关系。
+
+最后留下的结构比较清楚：
+
+- JS 捕获真实交互来源。
+- 工具函数兜底坐标和浏览器能力。
+- CSS 声明动画形态和减少动态效果策略。
+- 原有主题核心逻辑保持稳定。
+
+这样圆形扩散动画只是主题切换上的一层增强，而不是把主题系统变得更脆弱的复杂度来源。
