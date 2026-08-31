@@ -37,7 +37,7 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
           <div
             class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70"
           >
-            <Icon is:inline name="material-symbols:photo-library" class="text-[1.5rem]" />
+            <Icon name="material-symbols:photo-library" class="text-[1.5rem]" />
           </div>
           <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
             {title}
@@ -54,7 +54,7 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
       {albums.length > 0 && (
         <gallery-filter class="mb-6">
           <div class="relative mb-3">
-            <Icon is:inline
+            <Icon
               name="material-symbols:search"
               class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 text-lg pointer-events-none"
             />
@@ -69,14 +69,15 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
             <div class="flex flex-wrap gap-2">
               <button
                 data-tag="all"
-                class="btn-regular px-3 py-1.5 rounded-lg bg-(--primary) text-white hover:bg-(--primary) transition-colors duration-200 text-sm font-medium"
+                class="category-pill px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200"
+                data-active
               >
                 {i18n(I18nKey.all)}
               </button>
               {allTags.map((tag) => (
                 <button
                   data-tag={tag}
-                  class="btn-regular px-3 py-1.5 rounded-lg bg-(--btn-regular-bg) text-(--btn-content) hover:bg-(--btn-regular-bg-hover) transition-colors duration-200 text-sm font-medium"
+                  class="category-pill px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200"
                 >
                   {tag}
                 </button>
@@ -106,13 +107,13 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
           </div>
           {/* 搜索无结果提示 */}
           <div class="albums-empty hidden flex-col items-center justify-center py-12 text-neutral-400 dark:text-neutral-500">
-            <Icon is:inline name="material-symbols:search-off-rounded" class="text-4xl mb-3" />
+            <Icon name="material-symbols:search-off-rounded" class="text-4xl mb-3" />
             <div class="text-sm">{i18n(I18nKey.searchNoResults)}</div>
           </div>
         </>
       ) : (
         <div class="flex flex-col items-center justify-center py-16 text-neutral-400 dark:text-neutral-500">
-          <Icon is:inline name="material-symbols:photo-library" class="text-6xl mb-4 opacity-50" />
+          <Icon name="material-symbols:photo-library" class="text-6xl mb-4 opacity-50" />
           <p class="text-lg">{i18n(I18nKey.galleryNoAlbums)}</p>
         </div>
       )}
@@ -149,18 +150,9 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
           const filters = this.querySelectorAll("button");
 
           filters.forEach((f) => {
-            f.classList.remove("bg-(--primary)", "text-white");
-            f.classList.remove("hover:bg-(--primary)");
-            f.classList.add("bg-(--btn-regular-bg)", "text-(--btn-content)");
-            f.classList.add("hover:bg-(--btn-regular-bg-hover)");
-
-            if (f === button) {
-              f.classList.remove("bg-(--btn-regular-bg)", "text-(--btn-content)");
-              f.classList.remove("hover:bg-(--btn-regular-bg-hover)");
-              f.classList.add("bg-(--primary)", "text-white");
-              f.classList.add("hover:bg-(--primary)");
-            }
+            f.removeAttribute("data-active");
           });
+          button.setAttribute("data-active", "");
 
           this.applyFilters();
         }

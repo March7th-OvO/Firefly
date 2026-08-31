@@ -8,8 +8,9 @@ category: 文章示例
 licenseName: "未授权"
 author: emn178
 sourceLink: "https://github.com/emn178/markdown"
-draft: false
-
+slug: markdown-tutorial
+series: "Firefly 功能示例2"
+seriesOrder: 1
 ---
 
 这是一个展示如何编写 Markdown 文件的示例。本文档汇总了核心语法与常见扩展（GFM）。

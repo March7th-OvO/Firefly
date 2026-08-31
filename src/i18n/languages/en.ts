@@ -13,17 +13,44 @@ export const en: Translation = {
 	[Key.searchContent]: "Content",
 	[Key.searchViewMore]: "View more results ({count} more)",
 	[Key.other]: "Other",
+
+	// Navbar menu groups
+	[Key.navArticles]: "Articles",
+	[Key.navSocial]: "Social",
+	[Key.navMine]: "Mine",
+	[Key.navAbout]: "About",
+	[Key.navLinks]: "Links",
 	[Key.all]: "All",
 
 	[Key.tags]: "Tags",
 	[Key.categories]: "Categories",
 	[Key.allCategories]: "All Categories",
 	[Key.allTags]: "All Tags",
+	[Key.allSeries]: "All Series",
 	[Key.recentPosts]: "Recent Posts",
 	[Key.postList]: "Post List",
 	[Key.tableOfContents]: "Table of Contents",
 	[Key.tocEmpty]: "No table of contents on this page",
 	[Key.music]: "Music",
+	[Key.dynamic]: "Moments",
+	[Key.latestDynamics]: "Latest Moments",
+	[Key.moreDynamics]: "More moments",
+	[Key.dynamicDescription]: "Short thoughts and everyday moments.",
+	[Key.dynamicEmpty]: "No moments have been posted yet",
+	[Key.dynamicSearch]: "Search moments...",
+	[Key.dynamicNoResults]: "No matching moments found",
+	[Key.dynamicLoading]: "Loading moments",
+	[Key.dynamicAllYears]: "All years",
+	[Key.dynamicLoadMore]: "Load more",
+	[Key.dynamicBackToList]: "Back to moments",
+	[Key.dynamicProfile]: "View {name}'s profile",
+	[Key.dynamicPermalink]: "Permalink to this moment",
+	[Key.dynamicCollapseGallery]: "Collapse",
+	[Key.dynamicViewOriginal]: "View full size",
+	[Key.dynamicPreviousImage]: "Previous image",
+	[Key.dynamicNextImage]: "Next image",
+	[Key.dynamicViewImage]: "View image {index}",
+	[Key.dynamicSelectImage]: "Select image {index}",
 	[Key.musicNoPlaying]: "No playing",
 	[Key.musicLyrics]: "Lyrics",
 	[Key.musicVolume]: "Volume",
@@ -58,6 +85,11 @@ export const en: Translation = {
 		"Here are my friends, welcome to visit and communicate with each other",
 	[Key.searchFriends]: "Search friends...",
 	[Key.friendsEmpty]: "No friends yet.",
+	[Key.booknav]: "Bookmark Nav",
+	[Key.booknavDescription]:
+		"A curated collection of useful sites, organized by category.",
+	[Key.searchBooknav]: "Search bookmarks...",
+	[Key.booknavEmpty]: "No bookmarks yet.",
 	[Key.guestbook]: "Guestbook",
 	[Key.guestbookDescription]:
 		"Welcome to leave your mark here, share your thoughts and suggestions",
@@ -153,9 +185,46 @@ export const en: Translation = {
 	[Key.bangumiUpdatedAt]: "Build time",
 	[Key.bangumiDataStatic]: "Static data",
 
-	// Anime Tracking
-	[Key.anime]: "Anime",
-	[Key.animeSubtitle]: "My anime tracking list, data from Bilibili and TMDB",
+	// VNDB
+	[Key.vndb]: "VNDB",
+	[Key.vndbSubtitle]: "My visual novel list from VNDB",
+	[Key.vndbFilterAll]: "All",
+	[Key.vndbFilterVoted]: "Voted",
+	[Key.vndbFilterUnvoted]: "Unvoted",
+	[Key.vndbFilterNotes]: "With notes",
+	[Key.vndbStatusWishlist]: "Wishlist",
+	[Key.vndbStatusPlaying]: "Playing",
+	[Key.vndbStatusFinished]: "Finished",
+	[Key.vndbStatusStalled]: "Stalled",
+	[Key.vndbStatusDropped]: "Dropped",
+	[Key.vndbStatusUnknown]: "Unknown",
+	[Key.vndbNoData]: "No Data",
+	[Key.vndbNoDataDescription]: "No items in this category",
+	[Key.vndbEmpty]: "No Data",
+	[Key.vndbEmptyReason]:
+		"Possible reasons: user ID does not exist, list is private, network issue, or API limit",
+	[Key.vndbFetchError]: "VNDB Data Fetch Failed",
+	[Key.vndbFetchErrorDesc]:
+		"Failed to fetch data from VNDB API during build. This page is temporarily unavailable.",
+	[Key.vndbNotConfigured]: "VNDB User ID Not Configured",
+	[Key.vndbNotConfiguredDesc]:
+		"Please configure your VNDB user ID in src/config/siteConfig.ts",
+	[Key.vndbLastUpdated]: "Data updated at",
+	[Key.vndbVotes]: "votes",
+	[Key.vndbLengthVeryShort]: "Very short",
+	[Key.vndbLengthShort]: "Short",
+	[Key.vndbLengthMedium]: "Medium",
+	[Key.vndbLengthLong]: "Long",
+	[Key.vndbLengthVeryLong]: "Very long",
+
+	// Anime Tracking - Bilibili
+	[Key.bilibili]: "Bilibili",
+	[Key.bilibiliSubtitle]: "My Bilibili follow list (anime + drama)",
+	[Key.bilibiliNotConfigured]: "Bilibili not configured",
+	[Key.bilibiliNotConfiguredDesc]:
+		"Configure bilibili.uid in src/config/siteConfig.ts",
+
+	// Anime Tracking - Shared components
 	[Key.animeTotal]: "Total",
 	[Key.animeAverageRating]: "Avg Rating",
 	[Key.animeSearch]: "Search anime...",
@@ -168,20 +237,13 @@ export const en: Translation = {
 	[Key.animeDateAsc]: "Oldest",
 	[Key.animeNoResults]: "No matching anime found",
 	[Key.animeLastUpdated]: "Data updated at",
-	[Key.animeSource]: "Source",
 	[Key.animeEpStatus]: "Progress",
 	[Key.animeViewDetails]: "View Details",
-	[Key.animeNotConfigured]: "Anime data source not configured",
-	[Key.animeNotConfiguredDesc]:
-		"Please configure Bilibili UID or TMDB API Key in src/config/siteConfig.ts",
 	[Key.animeBilibiliAvg]: "Bilibili Avg",
-	[Key.animeTmdbAvg]: "TMDB Avg",
-	[Key.animeDualSynced]: "Dual Synced",
 	[Key.animeNoOverview]: "No synopsis available",
 	[Key.animeClose]: "Close",
 	[Key.animeSynopsis]: "Synopsis",
 	[Key.animeWatchNow]: "Watch Now",
-	[Key.animeViewTmdb]: "View TMDB Details",
 	[Key.animeAllWithCount]: "All ({count})",
 	[Key.animeTVWithCount]: "TV ({count})",
 	[Key.animeMovieWithCount]: "Movie ({count})",
@@ -192,6 +254,36 @@ export const en: Translation = {
 	[Key.animeTypeDrama]: "Drama",
 	[Key.animeTypeConcert]: "Concert",
 
+	// MyAnimeList
+	[Key.mal]: "MyAnimeList",
+	[Key.malSubtitle]: "My anime and manga lists from MyAnimeList",
+	[Key.malCategoryAnime]: "Anime",
+	[Key.malCategoryManga]: "Manga",
+	[Key.malFilterAll]: "All",
+	[Key.malStatusWatching]: "Watching",
+	[Key.malStatusReading]: "Reading",
+	[Key.malStatusCompleted]: "Completed",
+	[Key.malStatusOnHold]: "On Hold",
+	[Key.malStatusDropped]: "Dropped",
+	[Key.malStatusPlanToWatch]: "Plan to Watch",
+	[Key.malStatusPlanToRead]: "Plan to Read",
+	[Key.malNoData]: "No Data",
+	[Key.malNoDataDescription]: "No items in this category",
+	[Key.malEmpty]: "No Data",
+	[Key.malEmptyReason]:
+		"Possible reasons: username does not exist, list is private, invalid Client ID, or network issue",
+	[Key.malFetchError]: "MyAnimeList Data Fetch Failed",
+	[Key.malFetchErrorDesc]:
+		"Failed to fetch data from MyAnimeList API during build. Please check the username and Client ID, and make sure the list is public.",
+	[Key.malNotConfigured]: "MyAnimeList Not Configured",
+	[Key.malNotConfiguredDesc]:
+		"Please configure your MyAnimeList username and Client ID in src/config/siteConfig.ts. The list must be public.",
+	[Key.malLastUpdated]: "Data updated at",
+	[Key.malSeasonWinter]: "Winter",
+	[Key.malSeasonSpring]: "Spring",
+	[Key.malSeasonSummer]: "Summer",
+	[Key.malSeasonFall]: "Fall",
+
 	// Pagination
 	[Key.paginationFirst]: "First",
 	[Key.paginationPrev]: "Previous",
@@ -201,6 +293,7 @@ export const en: Translation = {
 	[Key.paginationOf]: "of",
 	[Key.paginationTotal]: ", Total",
 	[Key.paginationRecords]: " records",
+	[Key.paginationJump]: "Jump to page",
 
 	// 404 Page
 	[Key.notFound]: "404",
@@ -258,6 +351,13 @@ export const en: Translation = {
 	[Key.noRelatedPosts]: "No related posts",
 	[Key.noRandomPosts]: "No random posts",
 
+	// Article Series
+	[Key.series]: "Series",
+	[Key.seriesPartOf]: "Part of series",
+	[Key.seriesPart]: "Part {n}",
+	[Key.seriesThisArticle]: "This article",
+	[Key.noSeries]: "No series yet",
+
 	// Encrypted
 	[Key.postEncrypted]: "This post is encrypted",
 
@@ -280,6 +380,16 @@ export const en: Translation = {
 	[Key.overlayOpacity]: "Wallpaper Opacity",
 	[Key.overlayBlur]: "Background Blur",
 	[Key.overlayCardOpacity]: "Card Opacity",
+
+	// Settings Panel Tabs
+	[Key.settingsTabAppearance]: "Appearance",
+	[Key.settingsTabWallpaper]: "Wallpaper",
+	[Key.settingsTabEffects]: "Effects",
+
+	// Card Style
+	[Key.cardSettings]: "Card Style",
+	[Key.cardBorder]: "Card Border & Shadow",
+	[Key.cardFollowTheme]: "Card Follow Theme Color",
 
 	// Post List Layout
 	[Key.postListLayout]: "Post List Layout",
@@ -311,6 +421,7 @@ export const en: Translation = {
 	// Site Statistics
 	[Key.siteStats]: "Site Statistics",
 	[Key.siteStatsPostCount]: "Posts",
+	[Key.siteStatsDynamicCount]: "Moments",
 	[Key.siteStatsCategoryCount]: "Categories",
 	[Key.siteStatsTagCount]: "Tags",
 	[Key.siteStatsTotalWords]: "Total Words",

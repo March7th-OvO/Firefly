@@ -16,12 +16,16 @@ const selectedIds: string[] =
 
 const SYSTEM_FONT_STACK =
 	"system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+// 即使关闭自定义字体，也要确保行内代码和代码块回退到等宽字体。
+const MONO_FONT_STACK =
+	'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
 const selectedFontVars = selectedIds.filter((value) => value !== "system");
 const bodyFontFamily =
 	selectedFontVars.length > 0
-		? [...selectedFontVars.map((value) => `var(${value})`), SYSTEM_FONT_STACK].join(
-				", ",
-			)
+		? [
+				...selectedFontVars.map((value) => `var(${value})`),
+				SYSTEM_FONT_STACK,
+			].join(", ")
 		: SYSTEM_FONT_STACK;
 
 const fontByCssVar = new Map(fontsList.map((font) => [font.cssVariable, font]));
@@ -35,18 +39,30 @@ const fontEntries = Array.from(allCssVars)
 			Boolean(entry.font),
 	);
 
-const astroFontEntries = fontEntries.filter((entry) => entry.font.provider !== "local");
-const localFontEntries = fontEntries.filter((entry) => entry.font.provider === "local");
+const astroFontEntries = fontEntries.filter(
+	(entry) => entry.font.provider !== "local",
+);
+const localFontEntries = fontEntries.filter(
+	(entry) => entry.font.provider === "local",
+);
 const subsetFontVars = new Set(Object.keys(fontConfig.subsetFonts || {}));
 
-const bannerTitleFontVar = fontConfig.enable ? fontConfig.bannerTitleFont || "" : "";
+const bannerTitleFontVar = fontConfig.enable
+	? fontConfig.bannerTitleFont || ""
+	: "";
 const bannerTitleAccentFontVar = fontConfig.enable
 	? fontConfig.bannerTitleAccentFont || ""
 	: "";
 const bannerSubtitleFontVar = fontConfig.enable
 	? fontConfig.bannerSubtitleFont || ""
 	: "";
-const navbarTitleFontVar = fontConfig.enable ? fontConfig.navbarTitleFont || "" : "";
+const navbarTitleFontVar = fontConfig.enable
+	? fontConfig.navbarTitleFont || ""
+	: "";
+const codeFontVar = fontConfig.enable ? fontConfig.codeFont || "" : "";
+const codeFontFamily = codeFontVar
+	? `var(${codeFontVar}, ${MONO_FONT_STACK})`
+	: MONO_FONT_STACK;
 
 const getSourceUrl = (source: string | URL | { url: string | URL }) =>
 	typeof source === "string" || source instanceof URL
@@ -79,7 +95,10 @@ const getSubsetFontId = (fontName: string, weight?: string | number) =>
 const getVariantSourceValue = (
 	cssVar: string,
 	fontName: string,
-	variant: { weight?: string | number; src: Array<string | URL | { url: string | URL }> },
+	variant: {
+		weight?: string | number;
+		src: Array<string | URL | { url: string | URL }>;
+	},
 	source: string | URL | { url: string | URL },
 ) => {
 	const publicPath = toPublicPath(getSourceUrl(source));
@@ -93,33 +112,36 @@ const getVariantSourceValue = (
 };
 
 const localFontFacesCss = localFontEntries
-	.flatMap(({ cssVar, font }) =>
-		font.options?.variants?.map((variant) => {
-			const sources = variant.src
-				.map((source) =>
-					getVariantSourceValue(cssVar, font.name, variant, source),
-				)
-				.filter((value): value is string => Boolean(value))
-				.map((value) => `url("${value}") format("${getFontFormat(value)}")`)
-				.join(", ");
+	.flatMap(
+		({ cssVar, font }) =>
+			font.options?.variants?.map((variant) => {
+				const sources = variant.src
+					.map((source) =>
+						getVariantSourceValue(cssVar, font.name, variant, source),
+					)
+					.filter((value): value is string => Boolean(value))
+					.map((value) => `url("${value}") format("${getFontFormat(value)}")`)
+					.join(", ");
 
-			if (!sources) return "";
+				if (!sources) return "";
 
-			return `@font-face {
+				return `@font-face {
   font-family: "${font.name}";
   src: ${sources};
   font-display: ${font.display || "swap"};
   ${variant.weight ? `font-weight: ${variant.weight};` : ""}
   ${variant.style ? `font-style: ${variant.style};` : ""}
 }`;
-		}) || [],
+			}) || [],
 	)
 	.filter(Boolean)
 	.join("\n");
 
 const localFontVariableCss = localFontEntries
 	.map(({ cssVar, font }) => {
-		const fallbackList = font.fallbacks?.length ? `, ${font.fallbacks.join(", ")}` : "";
+		const fallbackList = font.fallbacks?.length
+			? `, ${font.fallbacks.join(", ")}`
+			: "";
 		return `${cssVar}: "${font.name}"${fallbackList};`;
 	})
 	.join("\n      ");
@@ -143,7 +165,9 @@ const localPreloadLinks = localFontEntries.flatMap(({ cssVar, font }) => {
 					type: getFontMimeType(href),
 				};
 			})
-			.filter((value): value is { href: string; type: string } => Boolean(value)) || []
+			.filter((value): value is { href: string; type: string } =>
+				Boolean(value),
+			) || []
 	);
 });
 ---
@@ -158,29 +182,21 @@ const localPreloadLinks = localFontEntries.flatMap(({ cssVar, font }) => {
 	<link rel="preload" href={href} as="font" type={type} crossorigin />
 ))}
 
-{fontConfig.enable &&
-	(
-		bannerTitleFontVar ||
-		bannerTitleAccentFontVar ||
-		bannerSubtitleFontVar ||
-		navbarTitleFontVar ||
-		selectedFontVars.length > 0
-	) && (
-		<style
-			set:html={`
-    ${bannerTitleFontVar || bannerTitleAccentFontVar || bannerSubtitleFontVar || navbarTitleFontVar ? `:root {
+<style
+	set:html={`
+    :root {
+      --font-code: ${codeFontFamily};
       ${bannerTitleFontVar ? `--font-banner-title: var(${bannerTitleFontVar}, inherit);` : ""}
       ${bannerTitleAccentFontVar ? `--font-banner-title-accent: var(${bannerTitleAccentFontVar}, var(--font-banner-title, inherit));` : ""}
       ${bannerSubtitleFontVar ? `--font-banner-subtitle: var(${bannerSubtitleFontVar}, inherit);` : ""}
       ${navbarTitleFontVar ? `--font-navbar-title: var(${navbarTitleFontVar}, inherit);` : ""}
-    }` : ""}
-
-    body {
-      font-family: ${bodyFontFamily};
     }
+
+    ${fontConfig.enable && selectedFontVars.length > 0 ? `body {
+      font-family: ${bodyFontFamily};
+    }` : ""}
   `}
-		/>
-	)}
+/>
 
 <script>
 	if (document.fonts && typeof document.fonts.ready !== "undefined") {

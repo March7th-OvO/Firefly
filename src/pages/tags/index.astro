@@ -33,7 +33,6 @@ const getTagStyle = (count: number) => {
 	].join("; ");
 };
 const isHotTag = (count: number) => count >= maxCount * 0.7;
-
 // Top 10 标签排行
 const topTags = sortedTags.slice(0, 10);
 const topMaxCount = topTags.length > 0 ? topTags[0].count : 1;
@@ -56,17 +55,17 @@ const topMaxCount = topTags.length > 0 ? topTags[0].count : 1;
                 {sortedTags.map((t) => (
                     <a href={getTagUrl(t.name)}
                        class:list={[
-                           "tag-cloud-item group inline-flex items-center",
+                           "tag-item tag-cloud-item group inline-flex items-center",
                            "transition-all duration-200",
                            "hover:scale-105 hover:shadow-md",
                            { "tag-cloud-item-hot": isHotTag(t.count) },
                        ]}
                        style={getTagStyle(t.count)}
                     >
-                        <span class="font-medium">
-                            <span class="opacity-50">#</span>{t.name.trim()}
+                        <span>
+                            {t.name.trim()}
                         </span>
-                        <span class="tag-cloud-count font-bold text-center">
+                        <span class="tag-count-badge tag-cloud-count font-bold text-center">
                             {t.count}
                         </span>
                     </a>
@@ -79,8 +78,8 @@ const topMaxCount = topTags.length > 0 ? topTags[0].count : 1;
     {
         tags.length === 0 && (
             <div class="card-base px-8 py-12 text-center">
-                <Icon is:inline
-                    name="material-symbols:tag-off"
+                <Icon
+                    name="material-symbols:tag-rounded"
                     class="text-5xl text-30 mx-auto mb-4"
                 />
                 <p class="text-30">{i18n(I18nKey.noData)}</p>
