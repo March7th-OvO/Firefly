@@ -7,6 +7,7 @@ import type {
 	WALLPAPER_NONE,
 	WALLPAPER_OVERLAY,
 } from "../constants/constants";
+import type { ImmersiveReadingConfig } from "./immersiveReadingConfig";
 import type { NsfwMode } from "./nsfw";
 
 export type LIGHT_DARK_MODE =
@@ -25,6 +26,8 @@ export type Favicon = {
 	theme?: "light" | "dark";
 	sizes?: string;
 };
+
+export type NavbarMode = "static" | "fixed" | "dynamic";
 
 export type SiteConfig = {
 	title: string;
@@ -75,7 +78,10 @@ export type SiteConfig = {
 		widthFull?: boolean; // 导航栏是否占满屏幕宽度
 		menuAlign?: "left" | "center"; // 导航菜单对齐方式（仅桌面端菜单）
 		followTheme?: boolean; // 导航栏图标和标题是否跟随主题色
-		stickyNavbar?: boolean; // 导航栏是否固定在顶部始终可见
+		// 导航栏模式：static（不固定，随页面滚动消失）/ fixed（固定在顶部常显）/ dynamic（固定在顶部，下滑隐藏、轻微上滑显示）
+		navbarMode?: NavbarMode;
+		/** @deprecated 由 navbarMode 取代；true→fixed，false→static */
+		stickyNavbar?: boolean;
 	};
 
 	// 页面开关配置
@@ -157,6 +163,8 @@ export type SiteConfig = {
 		sharePoster?: boolean;
 		// OpenGraph图片功能
 		generateOgImages: boolean;
+		// 沉浸阅读配置
+		immersiveReading?: ImmersiveReadingConfig;
 	};
 
 	// bangumi配置
