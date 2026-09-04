@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="light dark" />
+		<title></title>
+		<style>
+			:root {
+				--cf-orange: #f6821f;
+				--bg: #0d0d0d;
+				--text: #f9faf9;
+				--muted: #999;
+				--line: #2e2e2e;
+				--blue: #3a7bff;
+				--card-radius: 10px;
+			}
+
+			html[data-host-theme="light"] {
+				--cf-orange: #111;
+				--bg: #fff;
+				--text: #111;
+				--muted: rgba(17, 17, 17, 0.68);
+				--line: rgba(17, 17, 17, 0.2);
+				color-scheme: light;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--bg);
+				color: var(--text);
+			}
+
+			html[data-host-theme="light"] body {
+				background: #fff;
+			}
+
+			html[data-host-theme="dark"] body {
+				background-color: #0d0d0d;
+			}
+
+			html[data-host-theme="light"] .noise {
+				opacity: 0.06;
+			}
+
+			body {
+				padding: 24px 0 16px;
+				overflow-x: hidden;
+				font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+				background:
+					radial-gradient(circle at 72% 35%, rgba(246, 130, 31, 0.12), transparent 28%),
+					radial-gradient(circle at 26% 68%, rgba(58, 123, 255, 0.07), transparent 30%),
+					linear-gradient(180deg, #0d0d0d 0%, #111 100%);
+			}
+
+			.noise {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				opacity: 0.13;
+				background-image:
+					linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+				background-size: 32px 32px;
+				mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+			}
+
+			.scene {
+				width: min(896px, 72vw);
+				margin: 0 auto;
+				perspective: 1400px;
+			}
+
+			.card {
+				position: relative;
+				width: 100%;
+				aspect-ratio: 1.618 / 1;
+				overflow: hidden;
+				border: 1px solid #333;
+				border-radius: var(--card-radius);
+				background: linear-gradient(180deg, rgba(24, 24, 24, 0.98), rgba(13, 13, 13, 0.98));
+				box-shadow: 0 30px 80px rgba(0, 0, 0, 0.32);
+				transform-style: preserve-3d;
+				transition: border-color 0.25s ease;
+			}
+
+			.card:hover {
+				border-color: #444;
+			}
+
+			.glow {
+				position: absolute;
+				inset: -20%;
+				pointer-events: none;
+				background:
+					radial-gradient(circle at var(--mx, 70%) var(--my, 35%), rgba(246, 130, 31, 0.18), transparent 20%),
+					radial-gradient(circle at calc(var(--mx, 70%) - 28%) calc(var(--my, 35%) + 30%), rgba(58, 123, 255, 0.08), transparent 20%);
+				filter: blur(28px);
+				transform: translateZ(8px);
+			}
+
+			.grid {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				background:
+					linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px);
+				background-size: 44px 44px;
+				mask-image: linear-gradient(90deg, transparent 0, #000 18%, #000 100%);
+			}
+
+			.topbar {
+				position: absolute;
+				top: 0;
+				right: 0;
+				left: 0;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: 58px;
+				padding: 0 22px;
+				border-bottom: 1px solid var(--line);
+				border-radius: calc(var(--card-radius) - 1px) calc(var(--card-radius) - 1px) 0 0;
+				background: rgba(13, 13, 13, 0.74);
+				backdrop-filter: blur(6px);
+				transform: translateZ(30px);
+			}
+
+			.brand,
+			.status {
+				display: flex;
+				align-items: center;
+			}
+
+			.brand {
+				gap: 12px;
+				font-size: 13px;
+				font-weight: 600;
+				letter-spacing: 0.03em;
+			}
+
+			.logo-mark {
+				position: relative;
+				width: 30px;
+				height: 18px;
+			}
+
+			.logo-mark::before,
+			.logo-mark::after {
+				position: absolute;
+				bottom: 0;
+				background: var(--cf-orange);
+				content: "";
+			}
+
+			.logo-mark::before {
+				left: 0;
+				width: 18px;
+				height: 10px;
+				border-radius: 12px 12px 2px 2px;
+			}
+
+			.logo-mark::after {
+				right: 0;
+				width: 18px;
+				height: 14px;
+				border-radius: 14px 14px 2px 2px;
+			}
+
+			.status {
+				gap: 8px;
+				color: var(--muted);
+				font-size: 12px;
+			}
+
+			.dot {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				background: var(--cf-orange);
+				box-shadow: 0 0 12px rgba(246, 130, 31, 0.7);
+			}
+
+			.content {
+				position: absolute;
+				inset: 58px 0 0;
+				display: grid;
+				grid-template-columns: 46% 54%;
+			}
+
+			.info {
+				position: relative;
+				display: flex;
+				flex-direction: column;
+				padding: 30px 32px 22px;
+				border-right: 1px solid var(--line);
+				transform: translateZ(42px);
+			}
+
+			h1 {
+				margin: 0;
+				font-size: clamp(42px, 4.6vw, 66px);
+				font-weight: 700;
+				line-height: 0.94;
+				letter-spacing: -0.045em;
+			}
+
+			.cn {
+				margin-top: 10px;
+				color: #d6d6d6;
+				font-size: 20px;
+				font-weight: 600;
+			}
+
+			.meta {
+				margin-top: auto;
+				border-top: 1px solid var(--line);
+			}
+
+			.meta-row {
+				display: grid;
+				grid-template-columns: 92px 1fr;
+				gap: 16px;
+				padding: 10px 0;
+				border-bottom: 1px solid var(--line);
+				font-size: 12px;
+			}
+
+			.meta-label {
+				color: #666;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			.meta-value {
+				overflow: hidden;
+				color: #d8d8d8;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.map-wrap {
+				position: relative;
+				overflow: hidden;
+				transform-style: preserve-3d;
+			}
+
+			.map-title {
+				position: absolute;
+				top: 24px;
+				left: 26px;
+				z-index: 5;
+				transform: translateZ(52px);
+			}
+
+			.map-title strong {
+				display: block;
+				font-size: 22.4px;
+				font-weight: 600;
+				line-height: 1.35;
+			}
+
+			.map {
+				position: absolute;
+				inset: 54px 20px 26px;
+				transform: translateZ(16px);
+			}
+
+			.map-base,
+			.map-overlay {
+				position: absolute;
+				inset: 0;
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+
+			.map-base {
+				opacity: 0.48;
+				object-fit: contain;
+				filter: brightness(0.72) saturate(0.55);
+			}
+
+			.map-overlay {
+				overflow: visible;
+				pointer-events: none;
+			}
+
+			svg {
+				display: block;
+				width: 100%;
+				height: 100%;
+			}
+
+			.node {
+				fill: var(--cf-orange);
+				filter: drop-shadow(0 0 1.2px rgba(246, 130, 31, 0.95));
+			}
+
+			.node-ring {
+				fill: none;
+				stroke: var(--cf-orange);
+				stroke-width: 0.26;
+				opacity: 0.55;
+				transform-box: fill-box;
+				transform-origin: center;
+				animation: pulse 2.8s infinite ease-out;
+			}
+
+			@keyframes pulse {
+				0% {
+					opacity: 0.65;
+					transform: scale(0.4);
+				}
+				75%,
+				100% {
+					opacity: 0;
+					transform: scale(2);
+				}
+			}
+
+			.route {
+				fill: none;
+				stroke: url(#routeGrad);
+				stroke-width: 0.22;
+				opacity: 0.46;
+				stroke-dasharray: 1.1 1.4;
+				vector-effect: non-scaling-stroke;
+				animation: dash 12s linear infinite;
+			}
+
+			.signal {
+				fill: none;
+				stroke: var(--cf-orange);
+				stroke-width: 0.34;
+				stroke-linecap: round;
+				stroke-dasharray: 0.8 7.2;
+				opacity: 0.95;
+				vector-effect: non-scaling-stroke;
+				animation: flow 3.2s linear infinite;
+			}
+
+			.signal.s2 {
+				animation-duration: 4.1s;
+			}
+
+			.signal.s3 {
+				animation-duration: 3.7s;
+			}
+
+			.signal.s4 {
+				animation-duration: 4.6s;
+			}
+
+			.signal.s5 {
+				animation-duration: 3.4s;
+			}
+
+			@keyframes dash {
+				to {
+					stroke-dashoffset: -180;
+				}
+			}
+
+			@keyframes flow {
+				to {
+					stroke-dashoffset: -64;
+				}
+			}
+
+			.corner {
+				position: absolute;
+				width: 12px;
+				height: 12px;
+				border-color: #555;
+				pointer-events: none;
+			}
+
+			.c1 {
+				top: 68px;
+				left: 10px;
+				border-top: 1px solid;
+				border-left: 1px solid;
+			}
+
+			.c2 {
+				top: 68px;
+				right: 10px;
+				border-top: 1px solid;
+				border-right: 1px solid;
+			}
+
+			.c3 {
+				bottom: 10px;
+				left: 10px;
+				border-bottom: 1px solid;
+				border-left: 1px solid;
+			}
+
+			.c4 {
+				right: 10px;
+				bottom: 10px;
+				border-right: 1px solid;
+				border-bottom: 1px solid;
+			}
+
+			.hint {
+				margin: 12px 0 0;
+				color: #616161;
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-align: center;
+			}
+
+			html[data-host-theme="light"] .hint {
+				color: rgba(13, 13, 13, 0.62);
+			}
+
+			/* 亮色模式采用 Cloudflare 橙色卡面，深色模式继续使用原始深色材质。 */
+			html[data-host-theme="light"] .card {
+				border-color: rgba(17, 17, 17, 0.3);
+				background: #f6821f;
+				box-shadow: 0 30px 80px rgba(93, 42, 0, 0.2);
+			}
+
+			html[data-host-theme="light"] .card:hover {
+				border-color: rgba(17, 17, 17, 0.52);
+			}
+
+			html[data-host-theme="light"] .glow {
+				background:
+					radial-gradient(circle at var(--mx, 70%) var(--my, 35%), rgba(255, 255, 255, 0.28), transparent 22%),
+					radial-gradient(circle at calc(var(--mx, 70%) - 28%) calc(var(--my, 35%) + 30%), rgba(17, 17, 17, 0.1), transparent 24%);
+			}
+
+			html[data-host-theme="light"] .grid {
+				background:
+					linear-gradient(rgba(17, 17, 17, 0.065) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(17, 17, 17, 0.065) 1px, transparent 1px);
+				background-size: 44px 44px;
+			}
+
+			html[data-host-theme="light"] .topbar {
+				background: rgba(246, 130, 31, 0.82);
+			}
+
+			html[data-host-theme="light"] .dot {
+				box-shadow: 0 0 12px rgba(17, 17, 17, 0.38);
+			}
+
+			html[data-host-theme="light"] .cn,
+			html[data-host-theme="light"] .meta-value {
+				color: rgba(17, 17, 17, 0.78);
+			}
+
+			html[data-host-theme="light"] .meta-label {
+				color: rgba(17, 17, 17, 0.54);
+			}
+
+			html[data-host-theme="light"] .map-base {
+				opacity: 0.42;
+				filter: brightness(0) saturate(0);
+			}
+
+			html[data-host-theme="light"] #routeGrad stop {
+				stop-color: #111;
+			}
+
+			html[data-host-theme="light"] .corner {
+				border-color: rgba(17, 17, 17, 0.62);
+			}
+
+			@media (min-width: 601px) and (max-width: 820px) {
+				.scene {
+					width: 90vw;
+				}
+
+				.info {
+					padding: 24px 22px 18px;
+				}
+
+				.info,
+				.map-title,
+				.map {
+					transform: none;
+				}
+
+				h1 {
+					font-size: 42px;
+				}
+
+				.cn {
+					font-size: 18px;
+				}
+
+				.meta-row {
+					grid-template-columns: 68px 1fr;
+					gap: 10px;
+					padding: 8px 0;
+					font-size: 10px;
+				}
+
+				.map-title {
+					top: 22px;
+					left: 20px;
+				}
+
+				.map {
+					inset: 48px 14px 22px;
+				}
+
+			}
+
+			@media (max-width: 600px) {
+				body {
+					padding-top: 20px;
+				}
+
+				.scene {
+					width: 90vw;
+				}
+
+				.card {
+					min-height: 760px;
+					aspect-ratio: auto;
+				}
+
+				.content {
+					grid-template-rows: 45% 55%;
+					grid-template-columns: 1fr;
+				}
+
+				.info {
+					padding: 28px 24px 20px;
+					border-right: none;
+					border-bottom: 1px solid var(--line);
+					transform: none;
+				}
+
+				.map-title {
+					top: 20px;
+					left: 22px;
+					transform: none;
+				}
+
+				.map {
+					transform: none;
+				}
+
+				h1 {
+					font-size: clamp(42px, 13vw, 52px);
+				}
+
+				.hint {
+					display: none;
+				}
+			}
+
+			@media (max-width: 420px) {
+				.topbar {
+					padding: 0 16px;
+				}
+
+				.brand {
+					gap: 9px;
+					font-size: 11px;
+				}
+
+				.status {
+					font-size: 10px;
+				}
+
+				.info {
+					padding-right: 22px;
+					padding-left: 22px;
+				}
+
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.card,
+				.node-ring,
+				.route,
+				.signal {
+					animation: none;
+					transition: none;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="noise"></div>
+
+		<div class="scene">
+			<article class="card" id="card">
+				<div class="glow"></div>
+				<div class="grid"></div>
+
+				<header class="topbar">
+					<div class="brand">
+						<span class="logo-mark" aria-hidden="true"></span>
+						<span data-card-field="brand"></span>
+					</div>
+					<div class="status">
+						<span class="dot"></span>
+						<span data-card-field="status"></span>
+					</div>
+				</header>
+
+				<div class="content">
+					<section class="info">
+						<h1 data-card-lines="latinNameLines"></h1>
+						<div class="cn" data-card-field="localName"></div>
+
+						<div class="meta" data-card-list="fields"></div>
+					</section>
+
+					<section class="map-wrap">
+						<div class="map-title">
+							<strong data-card-lines="statementLines"></strong>
+						</div>
+
+						<div class="map">
+							<img
+								class="map-base"
+								src="https://raw.githubusercontent.com/NTag/dotted-map/main/images/world-vertical-circle-light.svg"
+								alt=""
+								aria-hidden="true"
+								referrerpolicy="no-referrer"
+							/>
+
+							<svg class="map-overlay" viewBox="0 0 126 60" preserveAspectRatio="xMidYMid meet" role="img" data-card-aria="networkAriaLabel">
+								<defs>
+									<linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
+										<stop offset="0" stop-color="#3A7BFF" stop-opacity=".06" />
+										<stop offset=".5" stop-color="#F6821F" stop-opacity=".88" />
+										<stop offset="1" stop-color="#F6821F" stop-opacity=".05" />
+									</linearGradient>
+								</defs>
+
+								<path class="route" d="M35 20 Q48 10 61 17" />
+								<path class="route" d="M61 17 Q86 8 111 21" />
+								<path class="route" d="M61 17 Q81 25 99 27" />
+								<path class="route" d="M99 27 Q111 33 113 46" />
+								<path class="route" d="M35 20 Q42 31 44 42" />
+								<path class="route" d="M44 42 Q69 44 113 46" />
+								<path class="route" d="M35 20 Q71 14 111 21" />
+
+								<path class="signal s1" d="M35 20 Q48 10 61 17" />
+								<path class="signal s2" d="M61 17 Q86 8 111 21" />
+								<path class="signal s3" d="M61 17 Q81 25 99 27" />
+								<path class="signal s4" d="M99 27 Q111 33 113 46" />
+								<path class="signal s5" d="M44 42 Q69 44 113 46" />
+
+								<g>
+									<circle class="node-ring" cx="35" cy="20" r="1.15" />
+									<circle class="node" cx="35" cy="20" r=".56" />
+									<circle class="node-ring" cx="44" cy="42" r="1.15" style="animation-delay: .35s" />
+									<circle class="node" cx="44" cy="42" r=".56" />
+									<circle class="node-ring" cx="61" cy="17" r="1.15" style="animation-delay: .65s" />
+									<circle class="node" cx="61" cy="17" r=".56" />
+									<circle class="node-ring" cx="99" cy="27" r="1.15" style="animation-delay: 1.05s" />
+									<circle class="node" cx="99" cy="27" r=".56" />
+									<circle class="node-ring" cx="111" cy="21" r="1.15" style="animation-delay: 1.45s" />
+									<circle class="node" cx="111" cy="21" r=".56" />
+									<circle class="node-ring" cx="113" cy="46" r="1.15" style="animation-delay: 1.9s" />
+									<circle class="node" cx="113" cy="46" r=".56" />
+								</g>
+							</svg>
+						</div>
+
+					</section>
+				</div>
+
+				<span class="corner c1"></span>
+				<span class="corner c2"></span>
+				<span class="corner c3"></span>
+				<span class="corner c4"></span>
+			</article>
+		</div>
+
+		<p class="hint" data-card-field="interactionHint"></p>
+
+		<script>
+			const card = document.getElementById("card");
+			const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+			function setCardText(field, value) {
+				const element = document.querySelector(`[data-card-field="${field}"]`);
+				if (element && typeof value === "string") {
+					element.textContent = value;
+				}
+			}
+
+			function setCardLines(field, lines) {
+				const element = document.querySelector(`[data-card-lines="${field}"]`);
+				if (!element || !Array.isArray(lines)) return;
+
+				const fragment = document.createDocumentFragment();
+				lines.forEach((line, index) => {
+					if (typeof line !== "string") return;
+					if (index > 0) fragment.append(document.createElement("br"));
+					fragment.append(document.createTextNode(line));
+				});
+				element.replaceChildren(fragment);
+			}
+
+			function applyIdCardConfig() {
+				const serializedConfig = window.frameElement?.getAttribute("data-card-config");
+				if (!serializedConfig) return;
+
+				try {
+					const config = JSON.parse(serializedConfig);
+					document.title = config.documentTitle;
+					setCardText("brand", config.brand);
+					setCardText("status", config.status);
+					setCardText("localName", config.localName);
+					setCardText("interactionHint", config.interactionHint);
+					setCardLines("latinNameLines", config.latinNameLines);
+					setCardLines("statementLines", config.statementLines);
+
+					const fieldsContainer = document.querySelector('[data-card-list="fields"]');
+					if (fieldsContainer && Array.isArray(config.fields)) {
+						const rows = config.fields.flatMap((field) => {
+							if (typeof field?.label !== "string" || typeof field?.value !== "string") return [];
+
+							const row = document.createElement("div");
+							row.className = "meta-row";
+							const label = document.createElement("div");
+							label.className = "meta-label";
+							label.textContent = field.label;
+							const value = document.createElement("div");
+							value.className = "meta-value";
+							value.textContent = field.value;
+							row.append(label, value);
+							return row;
+						});
+						fieldsContainer.replaceChildren(...rows);
+					}
+
+					const networkMap = document.querySelector('[data-card-aria="networkAriaLabel"]');
+					if (networkMap && typeof config.networkAriaLabel === "string") {
+						networkMap.setAttribute("aria-label", config.networkAriaLabel);
+					}
+				} catch (error) {
+					console.error("Unable to apply the identity card configuration.", error);
+				}
+			}
+
+			function syncHostTheme() {
+				let isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+				if (window.parent !== window) {
+					isDark = window.parent.document.documentElement.classList.contains("dark");
+				}
+				document.documentElement.dataset.hostTheme = isDark ? "dark" : "light";
+			}
+
+			const tiltMotion = {
+				rotateX: 0,
+				rotateY: 0,
+				targetRotateX: 0,
+				targetRotateY: 0,
+				velocityX: 0,
+				velocityY: 0,
+				glowX: 70,
+				glowY: 35,
+				targetGlowX: 70,
+				targetGlowY: 35,
+				returning: false,
+				frame: 0,
+			};
+
+			function renderTiltMotion() {
+				if (!card) return;
+
+				// 阻尼弹簧保留离开瞬间的速度，让卡片和光晕自然回弹至初始位置。
+				const springStrength = tiltMotion.returning ? 0.018 : 0.1;
+				const damping = tiltMotion.returning ? 0.9 : 0.8;
+				tiltMotion.velocityX = (tiltMotion.velocityX + (tiltMotion.targetRotateX - tiltMotion.rotateX) * springStrength) * damping;
+				tiltMotion.velocityY = (tiltMotion.velocityY + (tiltMotion.targetRotateY - tiltMotion.rotateY) * springStrength) * damping;
+				tiltMotion.rotateX += tiltMotion.velocityX;
+				tiltMotion.rotateY += tiltMotion.velocityY;
+				tiltMotion.glowX += (tiltMotion.targetGlowX - tiltMotion.glowX) * 0.14;
+				tiltMotion.glowY += (tiltMotion.targetGlowY - tiltMotion.glowY) * 0.14;
+
+				card.style.transform = `rotateX(${tiltMotion.rotateX}deg) rotateY(${tiltMotion.rotateY}deg)`;
+				card.style.setProperty("--mx", `${tiltMotion.glowX}%`);
+				card.style.setProperty("--my", `${tiltMotion.glowY}%`);
+
+				const rotationSettled =
+					Math.abs(tiltMotion.targetRotateX - tiltMotion.rotateX) < 0.01 &&
+					Math.abs(tiltMotion.targetRotateY - tiltMotion.rotateY) < 0.01 &&
+					Math.abs(tiltMotion.velocityX) < 0.01 &&
+					Math.abs(tiltMotion.velocityY) < 0.01;
+				const glowSettled =
+					Math.abs(tiltMotion.targetGlowX - tiltMotion.glowX) < 0.05 &&
+					Math.abs(tiltMotion.targetGlowY - tiltMotion.glowY) < 0.05;
+
+				if (rotationSettled && glowSettled) {
+					tiltMotion.rotateX = tiltMotion.targetRotateX;
+					tiltMotion.rotateY = tiltMotion.targetRotateY;
+					tiltMotion.glowX = tiltMotion.targetGlowX;
+					tiltMotion.glowY = tiltMotion.targetGlowY;
+					card.style.transform = `rotateX(${tiltMotion.rotateX}deg) rotateY(${tiltMotion.rotateY}deg)`;
+					card.style.setProperty("--mx", `${tiltMotion.glowX}%`);
+					card.style.setProperty("--my", `${tiltMotion.glowY}%`);
+					card.style.willChange = "";
+					tiltMotion.frame = 0;
+					return;
+				}
+
+				tiltMotion.frame = window.requestAnimationFrame(renderTiltMotion);
+			}
+
+			function startTiltMotion() {
+				if (!card || tiltMotion.frame) return;
+
+				card.style.willChange = "transform";
+				tiltMotion.frame = window.requestAnimationFrame(renderTiltMotion);
+			}
+
+			function tilt(event) {
+				if (!card || reducedMotion.matches) return;
+
+				const bounds = card.getBoundingClientRect();
+				const x = (event.clientX - bounds.left) / bounds.width;
+				const y = (event.clientY - bounds.top) / bounds.height;
+				tiltMotion.targetRotateY = (x - 0.5) * 8;
+				tiltMotion.targetRotateX = (0.5 - y) * 7;
+				tiltMotion.targetGlowX = x * 100;
+				tiltMotion.targetGlowY = y * 100;
+				tiltMotion.returning = false;
+				startTiltMotion();
+			}
+
+			function reset() {
+				if (!card) return;
+
+				tiltMotion.targetRotateX = 0;
+				tiltMotion.targetRotateY = 0;
+				tiltMotion.targetGlowX = 70;
+				tiltMotion.targetGlowY = 35;
+				tiltMotion.returning = true;
+				startTiltMotion();
+			}
+
+			function fitFrameHeight() {
+				const frame = window.frameElement;
+				if (!frame) return;
+
+				// 只测量文档流中的真实内容，避免 iframe 当前高度反向撑大 scrollHeight。
+				const bodyStyle = window.getComputedStyle(document.body);
+				const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+				const contentBottom = Array.from(document.body.children).reduce((bottom, element) => {
+					const elementStyle = window.getComputedStyle(element);
+					if (!(element instanceof HTMLElement) || elementStyle.display === "none" || elementStyle.position === "fixed") {
+						return bottom;
+					}
+
+					return Math.max(bottom, element.offsetTop + element.offsetHeight);
+				}, 0);
+				const nextHeight = Math.ceil(contentBottom + paddingBottom);
+
+				if (Math.abs(frame.getBoundingClientRect().height - nextHeight) > 1) {
+					frame.style.height = `${nextHeight}px`;
+				}
+			}
+
+			let fitFrameRequest = 0;
+			function queueFrameHeightSync() {
+				window.cancelAnimationFrame(fitFrameRequest);
+				fitFrameRequest = window.requestAnimationFrame(fitFrameHeight);
+			}
+
+			if (card && !reducedMotion.matches) {
+				card.addEventListener("pointermove", tilt);
+				card.addEventListener("pointerleave", reset);
+				card.addEventListener("pointercancel", reset);
+			}
+
+			applyIdCardConfig();
+			syncHostTheme();
+			if (window.parent !== window) {
+				new MutationObserver(syncHostTheme).observe(window.parent.document.documentElement, {
+					attributes: true,
+					attributeFilter: ["class"],
+				});
+			}
+
+			window.addEventListener("load", queueFrameHeightSync);
+			window.addEventListener("resize", queueFrameHeightSync);
+			new ResizeObserver(queueFrameHeightSync).observe(document.body);
+		</script>
+	</body>
+</html>
