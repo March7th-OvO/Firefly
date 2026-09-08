@@ -59,6 +59,15 @@ export const friendsConfig: FriendLink[] = [
 		weight: 7,
 		enabled: true,
 	},
+	{
+		title: "风起",
+		imgurl: "https://free.picui.cn/free/19515/2026/09/07/6a9e27c140a87.png",
+		desc: "你未看此花时，此花与汝同归于寂",
+		siteurl: "https://blog.windstart.top/",
+		tags: ["Blog"],
+		weight: 6,
+		enabled: true,
+	},
 ];
 
 // 获取启用的友链并进行排序
