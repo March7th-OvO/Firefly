@@ -1,4 +1,11 @@
-# 从 `git push` 到自动上线：为 Astro 博客搭建 GitHub Actions → 阿里云 ECS 自动部署
+---
+title: "从 git push 到自动上线：为 Astro 博客搭建 GitHub Actions → 阿里云 ECS 自动部署"
+published: 2026-09-09
+description: "记录为 Astro 博客搭建 GitHub Actions 自动构建，并通过 SSH 与 rsync 部署到阿里云 ECS 的完整过程，以及分支监听、部署权限和 SSH Host Key 等常见问题。"
+tags: [Astro, GitHub Actions, CI/CD, 阿里云 ECS, Nginx, rsync, SSH]
+category: 开发记录
+draft: false
+---
 
 以前更新博客时，流程通常是这样的：
 
