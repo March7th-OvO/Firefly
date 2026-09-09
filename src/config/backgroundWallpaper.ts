@@ -45,10 +45,10 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 			// "assets/images/DesktopWallpaper/d4.avif",
 			// "assets/images/DesktopWallpaper/d5.avif",
 			// "assets/images/DesktopWallpaper/d6.avif",
-			"assets/images/DesktopWallpaper/desktop1.jpg",
-			"assets/images/DesktopWallpaper/desktop2.png",
-			"assets/images/DesktopWallpaper/desktop3.jpg",
-			"assets/images/DesktopWallpaper/desktop4.jpg",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/desktop/desktop1.jpg",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/desktop/desktop2.png",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/desktop/desktop3.jpg",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/desktop/desktop4.jpg",
 		],
 		// 移动背景图片（支持单张或多张随机）
 		// mobile: "assets/images/MobileWallpaper/m1.avif",
@@ -59,9 +59,9 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 			// "assets/images/MobileWallpaper/m4.avif",
 			// "assets/images/MobileWallpaper/m5.avif",
 			// "assets/images/MobileWallpaper/m6.avif",
-			"assets/images/MobileWallpaper/mobile1.png",
-			"assets/images/MobileWallpaper/mobile2.jpg",
-			"assets/images/MobileWallpaper/mobile3.png",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/mobile/mobile1.png",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/mobile/mobile2.jpg",
+			"https://img.odette.moe/image/furinafans.com/wallpaper/mobile/mobile3.png",
 		],
 		// 背景视频播放地址
 		// 支持单个视频路径（字符串）或多个视频循环（数组，参考上面壁纸配置）
