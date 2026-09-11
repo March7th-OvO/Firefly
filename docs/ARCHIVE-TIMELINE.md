@@ -50,3 +50,8 @@
 桌面与手机截图：`docs/screenshots/archive-desktop.png`、`docs/screenshots/archive-mobile.png`。这些是本机 Chromium 与移动视口模拟，不代表真实 iPhone / Safari 性能成绩。当前版本提供可体验的视觉方向，未宣称跨设备逐像素一致或稳定 60fps。
 
 资源来源快照：RhineLabUI `6fd4e93`；GLB SHA-256：`DDA42B9B3B471D11C69820A64084D254A64B27761287AB0E35DD8387EC0A0BED`。
+
+## 文章选中配色
+
+按用户要求，未选中文件的主体基色改为 `#2964D9`，选中改为 `#022873`。配色集中在 `archive-asset.ts` 的 `FILE_COLOR` / `SELECTED_FILE_COLOR`，作用于端面、背板和嵌片，保留螺丝及印刷标签的辨识度。玻璃保持中蓝染色及中性吸收，避免与深蓝背板两次深蓝叠乘后接近黑色、吞掉内构；盖板暖色乘色也改为中性。选中端面不透射，避免浅色反射背景削弱深蓝状态。磨砂、光照、抬起与归位继续沿用，颜色通过原有材质插值随抬起/归位过渡。色值是材质基色，实际像素仍受光照、透射与色调映射影响。
+`pnpm check`、`pnpm type-check` 与最终 `pnpm build` 通过；浏览器复核第 1 篇与连续切换后的第 8 篇，未出现材质或着色器异常。配色截图：`docs/screenshots/archive-selection-blue.png`。

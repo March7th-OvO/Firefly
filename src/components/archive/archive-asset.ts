@@ -3,6 +3,10 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { CardAppearance } from "./rhine/appearance";
 import { configureInternalOptics } from "./rhine/internal-optics";
+
+// 主体颜色统一作用于盖板、端面和背板，斜视时也能辨认当前文章。
+const FILE_COLOR = "#2964D9";
+const SELECTED_FILE_COLOR = "#022873";
 export interface ArchiveAsset {
 	template: THREE.Group;
 	appearance: CardAppearance;
@@ -118,7 +122,7 @@ export async function loadArchiveAsset(url: string): Promise<ArchiveAsset> {
 					"varying float vPanelHeight;\n" + shader.fragmentShader;
 				shader.fragmentShader = shader.fragmentShader.replace(
 					"#include <color_fragment>",
-					"#include <color_fragment>\ndiffuseColor.rgb *= mix(vec3(0.40, 0.30, 0.20), vec3(1.0, 0.98, 0.94), smoothstep(0.1, 1.0, vPanelHeight));",
+					"#include <color_fragment>\ndiffuseColor.rgb *= mix(vec3(0.55), vec3(1.0), smoothstep(0.1, 1.0, vPanelHeight));",
 				);
 			};
 			arrayMat.roughness = 0.28;
@@ -134,6 +138,25 @@ export async function loadArchiveAsset(url: string): Promise<ArchiveAsset> {
 		if (name === "Index_Inlay") {
 			arrayMat.color.set("#e4d6c5");
 			arrayMat.metalness = 0.05;
+		}
+		if (
+			[
+				"Frosted_Polymer",
+				"Ivory_Edges",
+				"Optical_Diffuser",
+				"Index_Inlay",
+			].includes(name)
+		) {
+			// 盖板保持中蓝染色；选中时仅实体变深蓝，避免两层深蓝叠乘近黑。
+			arrayMat.color.set(FILE_COLOR);
+			mat.color.set(
+				name === "Frosted_Polymer" ? FILE_COLOR : SELECTED_FILE_COLOR,
+			);
+			// 使用中性吸收，避免旧香槟色将蓝色玻璃染浑。
+			// GLB 的不透明背板仍为 StandardMaterial，仅透射材质有吸收色。
+			arrayMat.attenuationColor?.set("#ffffff");
+			mat.attenuationColor?.set("#ffffff");
+			if (name === "Ivory_Edges") mat.transmission = 0;
 		}
 		appearance.register(name, mat, arrayMat);
 

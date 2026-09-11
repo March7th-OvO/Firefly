@@ -67,7 +67,8 @@ export class CardAppearance {
 					);
 					shader.fragmentShader = shader.fragmentShader.replace(
 						"#include <color_fragment>",
-						"#include <color_fragment>\ndiffuseColor.rgb *= mix(mix(vec3(0.40, 0.30, 0.20), vec3(1.0, 0.98, 0.94), smoothstep(0.1, 1.0, vArchiveHeight)), vec3(1.0), archiveQuality);",
+						// 与实例盖板共用中性明暗，归位时不出现暖色跳变。
+						"#include <color_fragment>\ndiffuseColor.rgb *= mix(mix(vec3(0.55), vec3(1.0), smoothstep(0.1, 1.0, vArchiveHeight)), vec3(1.0), archiveQuality);",
 					);
 					shader.fragmentShader = shader.fragmentShader.replace(
 						"#include <roughnessmap_fragment>",
