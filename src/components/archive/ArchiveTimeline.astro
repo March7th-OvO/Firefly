@@ -1,0 +1,61 @@
+---
+import ArchivePanel from "@/components/controls/ArchivePanel.astro";
+import { getSortedPostsList } from "@/utils/content-utils";
+import { getPostUrlBySlug, url } from "@/utils/url-utils";
+import "./archive-timeline.css";
+
+// 复用博客内容管线（含生产环境草稿过滤），时间顺序不受置顶影响。
+const posts = (await getSortedPostsList())
+	.slice()
+	.sort(
+		(a, b) =>
+			b.data.published.getTime() - a.data.published.getTime() ||
+			a.id.localeCompare(b.id),
+	);
+const articles = posts.map(({ id, data }) => ({
+	id,
+	title: data.title,
+	url: getPostUrlBySlug(id),
+	date: `${data.published.getFullYear()}-${String(data.published.getMonth() + 1).padStart(2, "0")}-${String(data.published.getDate()).padStart(2, "0")}`,
+	year: data.published.getFullYear(),
+	category: data.category || "",
+	tags: data.tags || [],
+	summary: data.description || "",
+}));
+---
+
+<archive-timeline data-model={url("/assets/archive/archive-cassette.glb")}>
+	<script is:inline type="application/json" data-articles set:html={JSON.stringify(articles).replace(/</g, "\\u003c")} />
+	<section class="at-shell" aria-label="文章档案时间线">
+		<header class="at-header">
+			<div class="at-brand"><span class="at-mark" aria-hidden="true">F /</span><div><span>FURINAFANS</span><small>PERSONAL ARCHIVE</small></div></div>
+			<button type="button" class="at-mode" data-mode aria-expanded="true" aria-controls="archive-list-fallback">列表视图 <span aria-hidden="true">↗</span></button>
+		</header>
+		<div class="at-heading"><div><p class="at-eyebrow">THE CHRONOLOGY OF IDEAS</p><h2>时间，留下的切片。</h2></div><p class="at-total"><b data-count>{articles.length}</b><span>篇文章 / ARTICLES</span></p></div>
+		<div class="at-toolbar"><div class="at-years" data-years aria-label="按年份定位"></div><span data-filter class="at-filter"></span></div>
+		<div class="at-visual" data-visual>
+			<div class="at-stage" data-stage tabindex="0" role="region" aria-roledescription="三维文章时间线" aria-label="文章时间线，左右方向键选择，Home 和 End 跳到首尾；拖动或滚轮浏览"></div>
+			<div class="at-status" data-status role="status">正在准备档案场景…</div>
+			<div class="at-axis-label" aria-hidden="true"><span>RECENT</span><span>PAST</span></div>
+			<p class="at-gesture">拖动浏览 <span> / </span> 滚轮与方向键切换</p>
+		</div>
+		<div class="at-preview" data-preview>
+			<div class="at-sequence"><span>FILE</span><b data-number>001</b><small data-date></small></div>
+			<div class="at-copy"><p class="at-meta" data-meta></p><h3 data-title></h3><p class="at-summary" data-summary></p><a data-read class="at-read">阅读全文 <span aria-hidden="true">↗</span></a></div>
+			<div class="at-navigation"><button type="button" data-prev aria-label="上一篇（更新）">←</button><button type="button" data-next aria-label="下一篇（更早）">→</button></div>
+		</div>
+		<div class="at-footer"><span data-boundary>最新文章</span><label class="at-range-label">时间线位置<input data-range type="range" min="0" max={Math.max(0, articles.length - 1)} value="0" step="1" aria-label="选择文章" /></label><span data-progress></span></div>
+		<p class="at-announcement" data-announcement role="status" aria-live="polite" aria-atomic="true"></p>
+	</section>
+	{/* SSR 保留完整可访问链接；无 JS、加载失败及列表模式下均可阅读。 */}
+	<div id="archive-list-fallback" class="at-list" data-list><ArchivePanel /></div>
+	<noscript>
+		{/* Tailwind 的 hidden!important 位于 base 层，回退规则也放在该层才能覆盖。 */}
+		<style is:inline>archive-timeline :is(.at-visual,.at-preview,.at-footer,.at-mode){display:none} @layer base {archive-timeline .archive-year-content[hidden]{display:block!important}}</style>
+		<p>当前未启用 JavaScript，可通过上方文章列表阅读归档。</p>
+	</noscript>
+</archive-timeline>
+
+<script>
+	import "./archive-timeline";
+</script>
