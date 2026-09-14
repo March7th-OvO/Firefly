@@ -291,7 +291,13 @@ const seriesData = await getSeriesPosts(entry);
                 data-pagefind-meta="title"
                 class="mb-2 text-xl md:text-2xl font-bold leading-tight text-white"
               >
-                {entry.data.title}
+                {entry.data.titleLines.map((line, i) => (
+                  <Fragment>
+                    {i > 0 && <br />}
+                    {i > 0 && " "}
+                    {line}
+                  </Fragment>
+                ))}
               </div>
               <PostMetadata
                 variant="cover"
@@ -372,7 +378,13 @@ const seriesData = await getSeriesPosts(entry);
                         md:before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
                         before:absolute before:top-3 before:-left-4.5"
             >
-              {entry.data.title}
+              {entry.data.titleLines.map((line, i) => (
+                <Fragment>
+                  {i > 0 && <br />}
+                  {i > 0 && " "}
+                  {line}
+                </Fragment>
+              ))}
             </div>
           </div>
         )

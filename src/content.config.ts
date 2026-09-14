@@ -3,8 +3,13 @@ import type { CollectionConfig } from "astro/content/config";
 import { glob } from "astro/loaders";
 import { type ZodType, z } from "astro/zod";
 
+// 标题手动换行标记：真实换行符（YAML 双引号转义 / 块标量）、字面 \n（无引号写法）、<br> 变体。
+// 归一化后所有消费点拿到单行 title，仅文章详情页用 titleLines 分行渲染。
+const TITLE_LINE_BREAK_RE = /\r\n|\r|\n|\\n|<br\s*\/?\s*>/gi;
+
 type PostData = {
 	title: string;
+	titleLines: string[];
 	published: Date;
 	updated?: Date;
 	draft: boolean;
@@ -87,6 +92,16 @@ const postsCollection: ContentCollection<PostData> = defineCollection({
 		prevSlug: z.string().default(""),
 		nextTitle: z.string().default(""),
 		nextSlug: z.string().default(""),
+	}).transform((data) => {
+		const titleLines = data.title
+			.split(TITLE_LINE_BREAK_RE)
+			.map((line) => line.trim())
+			.filter(Boolean);
+		return {
+			...data,
+			titleLines,
+			title: titleLines.join(" ") || data.title,
+		};
 	}),
 });
 
