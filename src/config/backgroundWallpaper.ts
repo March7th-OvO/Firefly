@@ -1,8 +1,14 @@
 import type { BackgroundWallpaperConfig } from "@/types/backgroundWallpaper";
 
 export const backgroundWallpaper: BackgroundWallpaperConfig = {
-	// 壁纸模式："banner" 横幅壁纸，"fullscreen" 全屏壁纸，"overlay" 全屏透明，"none" 纯色背景无壁纸
+	// 壁纸模式："banner" 横幅壁纸，"fullscreen" 全屏壁纸，"overlay" 全屏透明，"webgl" 动态场景，"none" 纯色背景无壁纸
 	mode: "fullscreen",
+	// 将 mode 设为 "webgl"，或在设置面板选择 WebGL，即可显示此场景。
+	// 自定义场景：在 src/utils/webgl-wallpaper/scenes/ 添加同名 .ts 模块后修改 scene。
+	webgl: {
+		scene: "cloud-train",
+		options: { speed: 0.75, resolution: 0.75, detail: 6, feedback: 0.3 },
+	},
 	// 是否启用背景视频播放，配置后将在导航栏显示视频播放按钮
 	playerEnable: true,
 	/**
@@ -69,7 +75,7 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 		// playerUrl: "/assets/videos/firefly.mp4",
 		playerUrl: "https://bed.twoleaf.cn/file/1785658612716_firefly.mp4",
 	},
-	// 横幅壁纸和全屏壁纸共享配置
+	// 横幅、全屏图片和 WebGL 壁纸共享配置
 	common: {
 		// 壁纸遮罩暗度，让横幅文字显示更清晰，0-1之间，值越大越暗
 		dimOpacity: 0.15,
