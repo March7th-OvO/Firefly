@@ -7,6 +7,7 @@ import {
 	WALLPAPER_FULLSCREEN,
 	WALLPAPER_NONE,
 	WALLPAPER_OVERLAY,
+	WALLPAPER_WEBGL,
 } from "@constants/constants";
 import type {
 	FullscreenWallpaperLayout,
@@ -348,12 +349,19 @@ export function syncBannerHomeTextVisibility(): void {
 	overlay.classList.toggle("hidden", !show);
 }
 
-export function getDefaultFullscreenLayout(): FullscreenWallpaperLayout {
+export function getDefaultFullscreenLayout(
+	mode: WALLPAPER_MODE = backgroundWallpaper.mode,
+): FullscreenWallpaperLayout {
+	if (mode === WALLPAPER_WEBGL)
+		return backgroundWallpaper.webgl?.layout ?? "hero";
 	return backgroundWallpaper.fullscreen?.layout ?? "classic";
 }
 
 export function getStoredFullscreenLayout(): FullscreenWallpaperLayout {
-	const defaultLayout = getDefaultFullscreenLayout();
+	const currentMode = document.documentElement.getAttribute(
+		"data-wallpaper-mode",
+	) as WALLPAPER_MODE | null;
+	const defaultLayout = getDefaultFullscreenLayout(currentMode ?? undefined);
 	if (
 		typeof localStorage === "undefined" ||
 		typeof localStorage.getItem !== "function"
@@ -384,6 +392,7 @@ export function applyFullscreenLayoutToDocument(
 	const mode = html.getAttribute("data-wallpaper-mode");
 	const transparent =
 		mode === WALLPAPER_OVERLAY ||
+		mode === WALLPAPER_WEBGL ||
 		(mode === WALLPAPER_FULLSCREEN && safeLayout === "hero");
 	document.body?.classList.toggle("wallpaper-transparent", transparent);
 	window.dispatchEvent(
@@ -410,8 +419,6 @@ export function applyWallpaperModeToDocument(
 	animate = true,
 ): void {
 	const html = document.documentElement;
-	const isHeroFullscreen =
-		html.getAttribute("data-fullscreen-layout") === "hero";
 
 	// 先启用过渡类再设置模式：确保 --content-top 变化时 top 过渡已激活（否则位置瞬间到位不动画）
 	if (animate) {
@@ -424,6 +431,13 @@ export function applyWallpaperModeToDocument(
 
 	html.setAttribute("data-wallpaper-mode", mode);
 
+	// fullscreen 与 webgl 各自的 layout 配置独立：切模式后重算布局属性
+	// （用户保存的选择优先，否则取新模式下的配置默认值）
+	const resolvedLayout = getStoredFullscreenLayout();
+	html.setAttribute("data-fullscreen-layout", resolvedLayout);
+	const isHeroFullscreen =
+		mode === WALLPAPER_FULLSCREEN && resolvedLayout === "hero";
+
 	// 首页标题显示：按当前模式 + 是否首页同步 hidden 类（SSR 按 config 默认模式渲染 hidden，
 	// 模式运行时切换后需同步）。
 	syncBannerHomeTextVisibility();
@@ -431,6 +445,7 @@ export function applyWallpaperModeToDocument(
 	// 卡片透明类：唯一运行时写入者（解析期由 body 起始脚本写入）
 	const transparent =
 		mode === WALLPAPER_OVERLAY ||
+		mode === WALLPAPER_WEBGL ||
 		(mode === WALLPAPER_FULLSCREEN && isHeroFullscreen);
 	document.body.classList.toggle("wallpaper-transparent", transparent);
 
@@ -448,7 +463,7 @@ export function updateNavbarTransparency(mode: WALLPAPER_MODE): void {
 	let blurAmount: number;
 
 	// 根据当前壁纸模式设置导航栏透明模式和模糊效果
-	if (mode === WALLPAPER_OVERLAY) {
+	if (mode === WALLPAPER_OVERLAY || mode === WALLPAPER_WEBGL) {
 		// 全屏透明模式
 		transparentMode = "none";
 		blurAmount = 0;
