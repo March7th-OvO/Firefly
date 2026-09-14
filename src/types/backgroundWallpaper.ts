@@ -1,15 +1,7 @@
 export type FullscreenWallpaperLayout = "classic" | "hero";
 
 export type BackgroundWallpaperConfig = {
-	mode: "banner" | "fullscreen" | "overlay" | "webgl" | "none"; // webgl 为可配置的全窗口着色器壁纸
-	webgl?: {
-		// scenes 目录中的模块文件名；可加入自己的模块并在这里切换。
-		scene: string;
-		// 场景自定义参数由对应模块解析，避免站点核心代码绑定某一着色器。
-		options?: Record<string, unknown>;
-		// 首屏布局：classic 文档流（首页 100vh、非首页横幅高度），hero 固定全屏首屏；默认 hero
-		layout?: FullscreenWallpaperLayout;
-	};
+	mode: "banner" | "fullscreen" | "overlay" | "none"; // 壁纸模式：banner横幅模式、fullscreen全屏壁纸、overlay全屏透明覆盖模式或none纯色背景
 	playerEnable?: boolean; // 是否启用背景视频播放，默认false
 	src:
 		| string

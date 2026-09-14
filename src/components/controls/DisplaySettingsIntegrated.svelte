@@ -4,7 +4,6 @@ import {
 	WALLPAPER_FULLSCREEN,
 	WALLPAPER_NONE,
 	WALLPAPER_OVERLAY,
-	WALLPAPER_WEBGL,
 } from "@constants/constants";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
@@ -79,9 +78,7 @@ const defaultWallpaperMode = backgroundWallpaper.mode;
 let fullscreenLayout: FullscreenWallpaperLayout = $state(
 	getDefaultFullscreenLayout(),
 );
-const defaultFullscreenLayout = $derived(
-	getDefaultFullscreenLayout(wallpaperMode),
-);
+const defaultFullscreenLayout = getDefaultFullscreenLayout();
 let currentLayout: "list" | "grid" = $state("list");
 const defaultLayout = siteConfig.postListLayout.defaultMode;
 const mobileDefaultLayout =
@@ -121,8 +118,7 @@ const defaultCardFollowThemeEnabled = getDefaultCardFollowThemeEnabled();
 const isWallpaperSwitchable = displaySettingsConfig.wallpaperModeSwitchable;
 const isFullscreenLayoutSwitchable = $derived(
 	displaySettingsConfig.fullscreenLayoutSwitchable &&
-		(wallpaperMode === WALLPAPER_FULLSCREEN ||
-			wallpaperMode === WALLPAPER_WEBGL),
+		wallpaperMode === WALLPAPER_FULLSCREEN,
 );
 const allowLayoutSwitch = displaySettingsConfig.layoutSwitchable;
 let effectiveDefaultLayout = $derived(
@@ -217,7 +213,6 @@ const hasWallpaperTab = $derived(
 	isWallpaperSwitchable ||
 		isFullscreenLayoutSwitchable ||
 		((wallpaperMode === WALLPAPER_OVERLAY ||
-			wallpaperMode === WALLPAPER_WEBGL ||
 			wallpaperMode === WALLPAPER_FULLSCREEN) &&
 			hasOverlaySettings) ||
 		((wallpaperMode === WALLPAPER_BANNER ||
@@ -263,7 +258,6 @@ $effect(() => {
 $effect(() => {
 	if (
 		(wallpaperMode === WALLPAPER_OVERLAY ||
-			wallpaperMode === WALLPAPER_WEBGL ||
 			wallpaperMode === WALLPAPER_FULLSCREEN) &&
 		hasOverlaySettings
 	) {
@@ -276,9 +270,7 @@ let overlaySliderItems = $derived<OverlaySliderItem[]>([
 		key: "opacity",
 		// 全屏壁纸模式不需要背景透明度，隐藏该滑块（仍显示模糊与卡片透明度）
 		enabled:
-			isOverlayOpacitySwitchable &&
-			wallpaperMode !== WALLPAPER_FULLSCREEN &&
-			wallpaperMode !== WALLPAPER_WEBGL,
+			isOverlayOpacitySwitchable && wallpaperMode !== WALLPAPER_FULLSCREEN,
 		label: i18n(I18nKey.overlayOpacity),
 		displayValue: `${Math.round(overlayOpacity * 100)}%`,
 		ariaLabel: i18n(I18nKey.overlayOpacity),
@@ -295,7 +287,6 @@ let overlaySliderItems = $derived<OverlaySliderItem[]>([
 		// 全屏壁纸模式关闭模糊渐变时隐藏模糊滑块（overlay 模式不受影响）
 		enabled:
 			isOverlayBlurSwitchable &&
-			wallpaperMode !== WALLPAPER_WEBGL &&
 			!(wallpaperMode === WALLPAPER_FULLSCREEN && !isFullscreenBlurRampEnabled),
 		label: i18n(I18nKey.overlayBlur),
 		displayValue: `${overlayBlur.toFixed(1)}px`,
@@ -336,8 +327,6 @@ function resetHue() {
 function resetWallpaperMode() {
 	wallpaperMode = defaultWallpaperMode;
 	setWallpaperMode(defaultWallpaperMode);
-	// 模式切换可能改变布局默认值（fullscreen/webgl 各自配置），同步面板状态
-	fullscreenLayout = getStoredFullscreenLayout();
 }
 
 function resetFullscreenLayout() {
@@ -472,8 +461,6 @@ function resetCardSettings() {
 function switchWallpaperMode(newMode: WALLPAPER_MODE) {
 	wallpaperMode = newMode;
 	setWallpaperMode(newMode);
-	// 模式切换可能改变布局默认值（fullscreen/webgl 各自配置），同步面板状态
-	fullscreenLayout = getStoredFullscreenLayout();
 	window.scrollTo({ top: 0 });
 
 	if (newMode === WALLPAPER_OVERLAY || newMode === WALLPAPER_FULLSCREEN) {
@@ -655,10 +642,6 @@ $effect(() => {
 		if (isOverlayCardOpacitySwitchable) {
 			setOverlayCardOpacity(overlayCardOpacity);
 		}
-	} else if (wallpaperMode === WALLPAPER_WEBGL) {
-		// WebGL 由场景直接渲染；仅沿用内容卡片透明度。
-		if (isOverlayCardOpacitySwitchable)
-			setOverlayCardOpacity(overlayCardOpacity);
 	} else if (wallpaperMode === WALLPAPER_FULLSCREEN) {
 		// 全屏壁纸不透明，只应用模糊与卡片透明度
 		if (isOverlayBlurSwitchable) {
@@ -875,15 +858,6 @@ $effect(() => {
 					<Icon icon="material-symbols:hide-image-outline" class="text-[1.25rem] shrink-0"></Icon>
 					<span class="text-xs font-medium">{i18n(I18nKey.wallpaperNoneMode)}</span>
 				</button>
-				<button
-					class="btn-regular rounded-md py-2 px-3 flex items-center justify-center gap-2 active:scale-95 transition-all relative overflow-hidden"
-					class:opacity-60={wallpaperMode !== WALLPAPER_WEBGL}
-					class:bg-(--btn-regular-bg-hover)={wallpaperMode === WALLPAPER_WEBGL}
-					onclick={() => switchWallpaperMode(WALLPAPER_WEBGL)}
-				>
-					<Icon icon="material-symbols:deployed-code-outline" class="text-[1.25rem] shrink-0"></Icon>
-					<span class="text-xs font-medium">{i18n(I18nKey.wallpaperWebglMode)}</span>
-				</button>
 			</div>
 		</div>
 		{/if}
@@ -925,7 +899,7 @@ $effect(() => {
 		{/if}
 
 		<!-- Overlay Settings Section（全屏壁纸模式也复用 overlay 的透明/模糊/卡片透明度设置） -->
-		{#if (wallpaperMode === WALLPAPER_OVERLAY || wallpaperMode === WALLPAPER_WEBGL || (wallpaperMode === WALLPAPER_FULLSCREEN && fullscreenLayout === "hero")) && hasOverlaySettings && hasVisibleOverlaySlider}
+		{#if (wallpaperMode === WALLPAPER_OVERLAY || (wallpaperMode === WALLPAPER_FULLSCREEN && fullscreenLayout === "hero")) && hasOverlaySettings && hasVisibleOverlaySlider}
 		<div class="">
 			<div class="section-title">
 				{i18n(I18nKey.overlaySettings)}

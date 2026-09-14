@@ -575,98 +575,6 @@ html[data-wallpaper-mode="overlay"] #wallpaper-wrapper {
     transition: opacity 0.6s ease !important;
 }
 
-/* WebGL 与 overlay 共用全窗口定位，但保留原图片作为 WebGL 不可用时的回退。 */
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100vh !important;
-    height: 100lvh !important;
-    z-index: var(--overlay-z-index, -1) !important;
-    opacity: 1 !important;
-    pointer-events: none !important;
-    overflow: hidden !important;
-    min-height: unset !important;
-    max-height: unset !important;
-    transform: none !important;
-}
-
-#webgl-wallpaper-host {
-    position: absolute;
-    inset: 0;
-    z-index: 6;
-    pointer-events: none;
-}
-
-#webgl-wallpaper-host canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-/* 画布首帧成功后再遮住图片；场景加载或显卡不可用时仍有壁纸。 */
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper.webgl-ready #banner-images-container {
-    visibility: hidden;
-}
-
-/* WebGL hero 首页：内容推到首屏之下后，非固定导航栏时用壁纸占满首屏（与 fullscreen hero 一致）；
-   classic 布局由下方覆盖块将 top-row 归零 */
-html[data-wallpaper-mode="webgl"] body.is-home:not(.sticky-navbar):not(.dynamic-navbar) #top-row {
-    height: 100lvh;
-    overflow: visible !important;
-}
-
-/* WebGL classic 布局：覆盖上方 fixed 全窗规则，恢复文档流壁纸（与 fullscreen classic 一致） */
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] #wallpaper-wrapper {
-    position: relative !important;
-    inset: auto !important;
-    width: 100% !important;
-    top: 0 !important;
-    z-index: 10 !important;
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-}
-
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body.is-home #wallpaper-wrapper {
-    height: 100vh !important;
-}
-
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) #wallpaper-wrapper {
-    height: var(--banner-height-non-home) !important;
-    min-height: var(--banner-height-non-home) !important;
-    max-height: var(--banner-height-non-home) !important;
-}
-
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) .content-panel {
-    position: absolute !important;
-    top: calc(var(--banner-height-non-home) - 3.5rem) !important;
-    margin-top: 0 !important;
-    min-height: calc(100vh - (var(--banner-height-non-home) - 3.5rem)) !important;
-}
-
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.sticky-navbar):not(.dynamic-navbar) #top-row {
-    height: 0 !important;
-    overflow: visible !important;
-}
-
-/* classic 非首页：显示页标题/文章信息覆盖层（覆盖 webgl 默认的隐藏规则） */
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) #wallpaper-wrapper .banner-page-title-overlay,
-html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) #wallpaper-wrapper .banner-post-meta-overlay {
-    display: flex !important;
-}
-
-/* classic 非首页移动端：与其他模式一致——隐藏壁纸，内容从导航栏下方开始 */
-@media (max-width: 1023px) {
-    html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) #wallpaper-wrapper {
-        display: none !important;
-    }
-    html[data-wallpaper-mode="webgl"][data-fullscreen-layout="classic"] body:not(.is-home) .content-panel {
-        top: 5.5rem !important;
-        min-height: calc(100vh - 5.5rem) !important;
-    }
-}
-
 /* Overlay 模式下图片模糊效果 */
 #wallpaper-wrapper.wallpaper-overlay img {
     width: 100% !important;
@@ -710,8 +618,7 @@ html[data-wallpaper-mode="banner"] #wallpaper-wrapper {
 }
 /* fullscreen / overlay：首帧即显示（尺寸/定位由各自规则处理） */
 html[data-wallpaper-mode="fullscreen"] #wallpaper-wrapper,
-html[data-wallpaper-mode="overlay"] #wallpaper-wrapper,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper {
+html[data-wallpaper-mode="overlay"] #wallpaper-wrapper {
     display: block !important;
 }
 
@@ -736,24 +643,9 @@ html[data-wallpaper-mode="overlay"] #wallpaper-wrapper .banner-page-title-overla
 html[data-wallpaper-mode="overlay"] #wallpaper-wrapper .banner-post-meta-overlay {
     display: none !important;
 }
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper .banner-home-text-overlay,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper .banner-page-title-overlay,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper .banner-post-meta-overlay,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper #banner-dim-container,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper #header-waves,
-html[data-wallpaper-mode="webgl"] #wallpaper-wrapper #wallpaper-gradient {
-    display: none !important;
-}
 /* none / overlay：内容区从导航栏下方开始（SSR 按 config banner 渲染时内容在横幅下方） */
 html[data-wallpaper-mode="none"] .absolute.w-full.z-30.pointer-events-none,
 html[data-wallpaper-mode="overlay"] .absolute.w-full.z-30.pointer-events-none {
-    top: 5.5rem !important;
-    margin-top: 0 !important;
-    min-height: calc(100vh - 5.5rem) !important;
-}
-/* webgl 非首页且非 classic 布局：内容从导航栏下方开始（classic 由布局块按横幅高度定位；
-   首页由 --content-top: 100vh 推到首屏之下） */
-html[data-wallpaper-mode="webgl"]:not([data-fullscreen-layout="classic"]) body:not(.is-home) .absolute.w-full.z-30.pointer-events-none {
     top: 5.5rem !important;
     margin-top: 0 !important;
     min-height: calc(100vh - 5.5rem) !important;
@@ -968,15 +860,15 @@ html[data-wallpaper-mode="fullscreen"] #wallpaper-wrapper .scroll-down-indicator
 
 /* 点击滚动指示器跳转到文章列表时，避免被固定导航栏遮挡 / 贴着浏览器顶边 */
 /* 排除overlay和none模式和banner模式，避免scroll-margin-top影响视觉间距 */
-html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="webgl"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body.sticky-navbar #main-grid {
+html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body.sticky-navbar #main-grid {
     scroll-margin-top: 5.5rem;
 }
 /* dynamic（固定在顶部，可能未隐藏）下滚动到内容区时给 main-grid 留出 5.5rem，避免被导航栏遮挡 */
-html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="webgl"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body.dynamic-navbar #main-grid {
+html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body.dynamic-navbar #main-grid {
     scroll-margin-top: 5.5rem;
 }
 /* static（无固定导航栏）只需 1rem 间距 */
-html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="webgl"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body:not(.sticky-navbar):not(.dynamic-navbar) #main-grid {
+html:not([data-wallpaper-mode="overlay"]):not([data-wallpaper-mode="none"]):not([data-wallpaper-mode="banner"]) body:not(.sticky-navbar):not(.dynamic-navbar) #main-grid {
     scroll-margin-top: 1rem;
 }
 

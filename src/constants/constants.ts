@@ -9,7 +9,6 @@ export const DEFAULT_THEME: typeof LIGHT_MODE = LIGHT_MODE; // 仅作为向后�
 export const WALLPAPER_BANNER = "banner",
 	WALLPAPER_FULLSCREEN = "fullscreen",
 	WALLPAPER_OVERLAY = "overlay",
-	WALLPAPER_WEBGL = "webgl",
 	WALLPAPER_NONE = "none";
 
 // Banner height unit: vh

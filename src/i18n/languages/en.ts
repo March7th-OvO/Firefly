@@ -381,7 +381,6 @@ export const en: Translation = {
 	[Key.fullscreenClassicLayout]: "Classic",
 	[Key.fullscreenHeroLayout]: "Hero",
 	[Key.wallpaperOverlayMode]: "Overlay Wallpaper",
-	[Key.wallpaperWebglMode]: "WebGL Wallpaper",
 	[Key.wallpaperNoneMode]: "None Wallpaper",
 
 	// Wallpaper Settings
