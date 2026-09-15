@@ -39,7 +39,7 @@ const COMPONENT_POSITION = {
 } as const;
 
 // 动画延迟配置
-const ANIMATION_DELAY_UNIT = 50; // ms
+const ANIMATION_DELAY_UNIT = 80; // ms
 
 // 组件映射表
 const componentMap = {
@@ -98,7 +98,7 @@ const getComponentsByPosition = (
 	return { topComponents, stickyComponents };
 };
 
-// 获取动画延迟（硬编码）
+// 提供侧栏组件的初始交错间隔；进入视口时观察器会按当批元素重新计算
 const getAnimationDelay = (index: number): string => {
 	return `${index * ANIMATION_DELAY_UNIT}ms`;
 };
@@ -133,8 +133,8 @@ const getComponentProps = (
 	index: number,
 ): Record<string, unknown> => {
 	const baseProps: Record<string, unknown> = {
-		class: "onload-animation",
-		style: `animation-delay: ${getAnimationDelay(index)}`,
+		class: "scroll-reveal",
+		style: `--scroll-reveal-delay: ${getAnimationDelay(index)}`,
 		widgetConfig: config,
 	};
 

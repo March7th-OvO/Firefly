@@ -77,6 +77,17 @@ html.is-animating .transition-swup-fade {
     }
 }
 
+@keyframes scroll-reveal-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 1.5rem, 0) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
 /* --------------------------------------------------------------------------
    3. Onload Animations
    -------------------------------------------------------------------------- */
@@ -94,7 +105,35 @@ html.is-animating .transition-swup-fade {
 .onload-animation:nth-child(5) { animation-delay: 120ms; }
 
 /* --------------------------------------------------------------------------
-   4. Navigation Progress Bar
+   4. Scroll Reveal Animations
+   -------------------------------------------------------------------------- */
+
+/* 元素只是视觉隐藏，内容在服务端渲染时已经完整存在，不承担懒加载职责。 */
+.scroll-reveal-enabled .scroll-reveal {
+    opacity: 0;
+}
+
+.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible {
+    animation: scroll-reveal-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--scroll-reveal-delay, 0ms);
+    will-change: transform, opacity;
+}
+
+.scroll-reveal-enabled .scroll-reveal.scroll-reveal-finished {
+    will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-reveal-enabled .scroll-reveal,
+    .scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   5. Navigation Progress Bar
    -------------------------------------------------------------------------- */
 
 #progress-bar {

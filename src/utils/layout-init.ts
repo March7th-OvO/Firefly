@@ -17,6 +17,7 @@ import {
 } from "@/utils/grid-layout-utils";
 import { initIconLoader } from "@/utils/icon-loader";
 import { initImageLoadFadeIn } from "@/utils/lqip-utils";
+import { setupScrollReveal } from "@/utils/scroll-reveal-utils";
 import { initScroll } from "@/utils/scroll-utils";
 import { initThemeListener, initWallpaperMode } from "@/utils/setting-utils";
 import { setupSwupTransitions } from "@/utils/swup-transitions";
@@ -59,6 +60,7 @@ export function initLayout(): void {
 	// 滚动路径不再读取布局；先在初始化时填充侧边栏 top 容器可见性缓存
 	refreshSidebarStickyState();
 	initScroll();
+	setupScrollReveal();
 	initTouchCodeCopyReveal();
 
 	// 页面加载完成后初始化banner和内容溢出容器
