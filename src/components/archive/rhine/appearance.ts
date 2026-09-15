@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import {
-	glassRevealGLSL,
-	frostedTransmissionGLSL,
 	FROSTED_ROUGHNESS,
+	frostedTransmissionGLSL,
+	glassRevealGLSL,
 } from "./glass-reveal.ts";
 import { internalOpticsFragment } from "./internal-optics.ts";
 
@@ -97,7 +97,8 @@ export class CardAppearance {
 			child.userData.glassClarity.value = clarity;
 			if (child.userData.surface !== "Frosted_Polymer") return;
 			const mat = child.material as Surface;
-			const palette = this.palettes.get("Frosted_Polymer")!;
+			const palette = this.palettes.get("Frosted_Polymer");
+			if (!palette) return;
 			const quality = child.userData.appearance.value as number;
 			const baseline = (
 				key: "thickness" | "transmission" | "attenuationDistance",

@@ -112,14 +112,12 @@ export async function loadArchiveAsset(url: string): Promise<ArchiveAsset> {
 			arrayMat.transparent = false;
 			arrayMat.color.set("#fff7ed");
 			arrayMat.onBeforeCompile = (shader) => {
-				shader.vertexShader =
-					"varying float vPanelHeight;\n" + shader.vertexShader;
+				shader.vertexShader = `varying float vPanelHeight;\n${shader.vertexShader}`;
 				shader.vertexShader = shader.vertexShader.replace(
 					"#include <begin_vertex>",
 					"#include <begin_vertex>\nvPanelHeight = position.y / 3.7;",
 				);
-				shader.fragmentShader =
-					"varying float vPanelHeight;\n" + shader.fragmentShader;
+				shader.fragmentShader = `varying float vPanelHeight;\n${shader.fragmentShader}`;
 				shader.fragmentShader = shader.fragmentShader.replace(
 					"#include <color_fragment>",
 					"#include <color_fragment>\ndiffuseColor.rgb *= mix(vec3(0.55), vec3(1.0), smoothstep(0.1, 1.0, vPanelHeight));",

@@ -28,7 +28,7 @@ const articles = posts.map(({ id, data }) => ({
 	<script is:inline type="application/json" data-articles set:html={JSON.stringify(articles).replace(/</g, "\\u003c")} />
 	<section class="at-shell" aria-label="文章档案时间线">
 		<header class="at-header">
-			<div class="at-brand"><span class="at-mark" aria-hidden="true">F /</span><div><span>FURINAFANS</span><small>PERSONAL ARCHIVE</small></div></div>
+			<div class="at-brand"><span class="at-mark" aria-hidden="true">A /</span><div><span>ARCHIVE</span><small>ARTICLE TIMELINE</small></div></div>
 			<button type="button" class="at-mode" data-mode aria-expanded="true" aria-controls="archive-list-fallback">列表视图 <span aria-hidden="true">↗</span></button>
 		</header>
 		<div class="at-heading"><div><p class="at-eyebrow">THE CHRONOLOGY OF IDEAS</p><h2>时间，留下的切片。</h2></div><p class="at-total"><b data-count>{articles.length}</b><span>篇文章 / ARTICLES</span></p></div>

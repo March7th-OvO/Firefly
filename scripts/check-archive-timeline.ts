@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import {
 	coast,
 	damp,
-	wave,
 	type Spring,
+	wave,
 } from "../src/components/archive/timeline-motion";
 
 // 真实需求回归：快慢滑动不能变成固定追加格数，且不同刷新率不能改变滑行距离。

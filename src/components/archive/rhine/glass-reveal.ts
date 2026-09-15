@@ -22,10 +22,7 @@ export function frostedTransmissionLod(
 	const clearLod =
 		Math.log2(textureWidth) * CLEAR_ROUGHNESS * clamp(ior * 2 - 2);
 	const bounded = Math.log2(
-		Math.max(
-			2 ** clearLod,
-			panelPixels * FROST_SPAN * Math.pow(strength, 1.15),
-		),
+		Math.max(2 ** clearLod, panelPixels * FROST_SPAN * strength ** 1.15),
 	);
 	return native + (Math.min(native, bounded) - native) * quality;
 }

@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
-import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import { createArchiveLighting } from "./rhine/archive-lighting";
 import { loadArchiveAsset } from "./archive-asset";
-import { coast, damp, wave, type Spring } from "./timeline-motion";
+import { createArchiveLighting } from "./rhine/archive-lighting";
+import { coast, damp, type Spring, wave } from "./timeline-motion";
 
 export interface TimelineScene {
 	select(index: number): void;
@@ -34,6 +34,7 @@ export async function createTimelineScene(
 	try {
 		renderer = new THREE.WebGLRenderer({
 			antialias: true,
+			alpha: true,
 			powerPreference: "high-performance",
 		});
 	} catch (error) {
@@ -41,12 +42,12 @@ export async function createTimelineScene(
 		throw error;
 	}
 	const scene = new THREE.Scene();
-	scene.background = new THREE.Color("#eae5e1");
+	// 保留真实透明度，让网站壁纸与主题直接透出，而非匹配一块固定底色。
+	renderer.setClearColor(0x000000, 0);
 	const camera = new THREE.PerspectiveCamera(10, 1, 5, 180);
 	const aim = new THREE.Vector3(0, 0.4, 0);
 	camera.position.copy(aim).add(new THREE.Vector3(62.26, 27, 43.28));
 	camera.lookAt(aim);
-	scene.fog = new THREE.Fog("#eae5e1", 84, 106);
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -66,7 +67,8 @@ export async function createTimelineScene(
 	light.shadow.radius = 4;
 	const floor = new THREE.Mesh(
 		new THREE.PlaneGeometry(200, 200),
-		new THREE.MeshStandardMaterial({ color: "#d8c9b9", roughness: 0.95 }),
+		// 地面只接收轻微投影，不再绘制奶黄色实体平面。
+		new THREE.ShadowMaterial({ color: "#172749", opacity: 0.16 }),
 	);
 	floor.rotation.x = -Math.PI / 2;
 	floor.position.y = -4.63;
@@ -78,6 +80,7 @@ export async function createTimelineScene(
 	ao.kernelRadius = 0.38;
 	ao.minDistance = 0.001;
 	ao.maxDistance = 0.09;
+	// SSAOPass 默认乘色混合保留 beauty buffer 的 alpha，空白处保持透明。
 	composer.addPass(ao);
 	composer.addPass(new OutputPass());
 	const capacity = Math.min(25, options.count);
@@ -94,16 +97,16 @@ export async function createTimelineScene(
 	const signal = abort.signal;
 	const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 	const rail: Spring = { value: 0, velocity: 0 };
-	let selected = 0,
-		target = 0,
-		hover = -1,
-		clock = 0,
-		last = 0;
-	let momentum = false,
-		disposed = false,
-		suspended = false,
-		inView = true,
-		frameId = 0;
+	let selected = 0;
+	let target = 0;
+	let hover = -1;
+	let clock = 0;
+	let last = 0;
+	let momentum = false;
+	let disposed = false;
+	let suspended = false;
+	let inView = true;
+	let frameId = 0;
 	let pulses: { index: number; time: number }[] = [];
 	const dummy = new THREE.Object3D();
 	const ray = new THREE.Raycaster();
@@ -121,12 +124,13 @@ export async function createTimelineScene(
 		const canvas = document.createElement("canvas");
 		canvas.width = 512;
 		canvas.height = 220;
-		const ctx = canvas.getContext("2d")!;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) throw new Error("无法创建档案标签画布");
 		ctx.fillStyle = "#e6e2d9";
 		ctx.fillRect(0, 0, 512, 220);
 		ctx.fillStyle = "#252b29";
 		ctx.font = "500 40px sans-serif";
-		ctx.fillText("FURINAFANS", 20, 55);
+		ctx.fillText("ARCHIVE", 20, 55);
 		ctx.font = "300 90px sans-serif";
 		ctx.fillText(`F-${String(index + 1).padStart(3, "0")}`, 15, 160);
 		const texture = new THREE.CanvasTexture(canvas);
@@ -159,12 +163,12 @@ export async function createTimelineScene(
 	const clamp = (value: number) =>
 		Math.max(0, Math.min(options.count - 1, value));
 	const choose = (index: number) => {
-		index = Math.round(clamp(index));
-		if (selected === index) return;
-		selected = index;
-		ensureHero(index);
-		if (!reduced.matches) pulses.push({ index, time: clock });
-		options.onSelect(index);
+		const next = Math.round(clamp(index));
+		if (selected === next) return;
+		selected = next;
+		ensureHero(next);
+		if (!reduced.matches) pulses.push({ index: next, time: clock });
+		options.onSelect(next);
 	};
 	const select = (index: number) => {
 		momentum = false;
@@ -254,8 +258,8 @@ export async function createTimelineScene(
 				if (event.pointerType === "mouse") hover = pick(event);
 				return;
 			}
-			const dx = event.clientX - drag.x,
-				dy = event.clientY - drag.y;
+			const dx = event.clientX - drag.x;
+			const dy = event.clientY - drag.y;
 			if (!drag.moved && Math.hypot(dx, dy) < 8) return;
 			drag.moved = true;
 			hover = -1;
@@ -263,7 +267,10 @@ export async function createTimelineScene(
 			const value = clamp(
 				drag.start - (dx * p.x + dy * p.y) / Math.max(1, p.lengthSq()),
 			);
-			const previous = drag.samples.at(-1)!;
+			const previous = drag.samples.at(-1) ?? {
+				value: drag.start,
+				time: event.timeStamp,
+			};
 			const direction = Math.sign(value - previous.value);
 			if (direction && drag.direction && direction !== drag.direction)
 				drag.samples = [previous];
@@ -299,8 +306,8 @@ export async function createTimelineScene(
 			}
 			return;
 		}
-		const first = current.samples[0],
-			end = current.samples.at(-1)!;
+		const first = current.samples[0];
+		const end = current.samples.at(-1) ?? first;
 		rail.velocity =
 			!canceled &&
 			!reduced.matches &&
@@ -331,8 +338,8 @@ export async function createTimelineScene(
 		},
 		{ signal },
 	);
-	let wheelTotal = 0,
-		wheelTime = 0;
+	let wheelTotal = 0;
+	let wheelTime = 0;
 	host.addEventListener(
 		"wheel",
 		(event) => {

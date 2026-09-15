@@ -22,7 +22,9 @@ class ArchiveTimelineElement extends HTMLElement {
 	private announcement = 0;
 	private animations: Animation[] = [];
 	private query<T extends HTMLElement = HTMLElement>(name: string): T {
-		return this.querySelector<T>(`[data-${name}]`)!;
+		const element = this.querySelector<T>(`[data-${name}]`);
+		if (!element) throw new Error(`缺少归档元素: ${name}`);
+		return element;
 	}
 
 	connectedCallback(): void {
@@ -45,9 +47,9 @@ class ArchiveTimelineElement extends HTMLElement {
 			this.query<HTMLScriptElement>("articles").textContent || "[]",
 		) as Article[];
 		const params = new URLSearchParams(location.search);
-		const tags = params.getAll("tag"),
-			categories = params.getAll("category"),
-			uncategorized = !!params.get("uncategorized");
+		const tags = params.getAll("tag");
+		const categories = params.getAll("category");
+		const uncategorized = !!params.get("uncategorized");
 		// 与 ArchivePanel 保持相同组合语义：组内 OR，标签/分类之间 AND。
 		this.articles = all.filter(
 			(article) =>
@@ -108,13 +110,18 @@ class ArchiveTimelineElement extends HTMLElement {
 		}
 		this.query("status").hidden = false;
 		this.query("status").textContent = "正在准备档案场景…";
+		const model = this.dataset.model;
+		if (!model) {
+			this.fail("缺少档案模型，文章列表仍可正常阅读。");
+			return;
+		}
 		// Three.js 只进入归档页的异步代码块，不增加首页的初始执行成本。
 		void import("./timeline-scene")
 			.then((module) => {
 				if (signal.aborted) return;
 				return module.createTimelineScene(this.query("stage"), {
 					count: this.articles.length,
-					model: this.dataset.model!,
+					model,
 					signal,
 					onSelect: (index) => {
 						this.selected = index;
@@ -153,11 +160,11 @@ class ArchiveTimelineElement extends HTMLElement {
 		this.scene = undefined;
 	}
 	private select(index: number): void {
-		index = Math.max(0, Math.min(this.articles.length - 1, index));
-		if (index === this.selected) return;
-		this.selected = index;
+		const next = Math.max(0, Math.min(this.articles.length - 1, index));
+		if (next === this.selected) return;
+		this.selected = next;
 		this.render(true);
-		this.scene?.select(index);
+		this.scene?.select(next);
 	}
 	private setListMode(value: boolean): void {
 		this.listMode = value;
