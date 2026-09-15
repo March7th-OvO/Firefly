@@ -33,7 +33,7 @@ export interface EffectiveSidebarState {
 
 /** 纯 footer 类构建器（从 MainGridLayout 的 frontmatter 迁出，逐字保留分支） */
 export function buildFooterClass(config: ResponsiveSidebarConfig): string {
-	const footerClass = ["footer", "col-span-1", "onload-animation"];
+	const footerClass = ["footer", "col-span-1", "scroll-reveal"];
 
 	if (
 		config.isBothSidebars &&

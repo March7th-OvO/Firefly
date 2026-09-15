@@ -107,7 +107,7 @@ export function generateSidebarClasses(
 		"md:row-start-1",
 		"md:row-end-3",
 		"md:col-start-1",
-		"onload-animation",
+		"scroll-reveal",
 	];
 
 	if (config.isBothSidebars && config.tabletSidebar === "right") {
@@ -127,7 +127,7 @@ export function generateSidebarClasses(
 export function generateRightSidebarClasses(
 	config: ResponsiveSidebarConfig,
 ): string {
-	const classes = ["mb-4", "hidden", "onload-animation"];
+	const classes = ["mb-4", "hidden", "scroll-reveal"];
 
 	if (config.isBothSidebars && config.tabletSidebar === "right") {
 		// 双侧栏+平板端显示右侧栏：769px+显示右侧栏

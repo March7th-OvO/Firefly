@@ -17,8 +17,6 @@ export const getStaticPaths = (async ({ paginate }) => {
 
 const { page } = Astro.props;
 
-const len = page.data.length;
-
 // 列表页隐藏的 h1：首屏用站点标题，后续页用「首页 · 页码」，避免空 h1
 const heading =
 	page.currentPage === 1
@@ -31,9 +29,8 @@ const heading =
   {
     page.total > page.size && (
       <Pagination
-        class="mx-auto onload-animation"
+        class="mx-auto scroll-reveal"
         page={page}
-        style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}
       />
     )
   }

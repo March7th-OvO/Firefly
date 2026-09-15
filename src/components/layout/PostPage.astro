@@ -6,9 +6,6 @@ import { siteConfig } from "@/config";
 
 const { page } = Astro.props;
 
-let delay = 0;
-const interval = 50;
-
 // 类型别名避免Fragment语法问题
 type PostEntry = CollectionEntry<"posts">;
 
@@ -54,8 +51,8 @@ const coverPositionClass =
         pinned={entry.data.pinned}
         password={!!entry.data.password}
         loading={index < 2 ? "eager" : "lazy"}
-        class:list="onload-animation post-card-item"
-        style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
+        class:list="scroll-reveal post-card-item"
+        style=""
       />
     ))
   }
