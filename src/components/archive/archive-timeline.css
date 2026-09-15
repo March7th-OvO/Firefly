@@ -6,6 +6,9 @@
 /* 透明正文直接叠在壁纸上，整页统一弱化壁纸，避免再引入局部阅读底板。 */
 body:has(archive-timeline) #banner-images-container { opacity: .16; }
 archive-timeline { display: block; --at-ink: var(--deep-text); --at-muted: var(--content-meta); --at-line: var(--line-color); --at-accent: var(--primary); color: var(--at-ink); }
+/* 自定义元素未注册时仅保留 SSR 列表；避免 Swup 将 noscript 内的 style 激活后误隐藏三维场景。 */
+archive-timeline:not(:defined) :is(.at-visual, .at-preview, .at-footer, .at-mode) { display: none; }
+@layer base { archive-timeline:not(:defined) .archive-year-content[hidden] { display: block !important; } }
 /* 深色正文与博客一致；外层与画布不铺色，允许壁纸直接透出。 */
 .dark archive-timeline { --at-ink: #e4eaf6; }
 archive-timeline [hidden] { display: none !important; }

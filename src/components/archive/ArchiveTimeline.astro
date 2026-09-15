@@ -50,8 +50,6 @@ const articles = posts.map(({ id, data }) => ({
 	{/* SSR 保留完整可访问链接；无 JS、加载失败及列表模式下均可阅读。 */}
 	<div id="archive-list-fallback" class="at-list" data-list><ArchivePanel /></div>
 	<noscript>
-		{/* Tailwind 的 hidden!important 位于 base 层，回退规则也放在该层才能覆盖。 */}
-		<style is:inline>archive-timeline :is(.at-visual,.at-preview,.at-footer,.at-mode){display:none} @layer base {archive-timeline .archive-year-content[hidden]{display:block!important}}</style>
 		<p>当前未启用 JavaScript，可通过上方文章列表阅读归档。</p>
 	</noscript>
 </archive-timeline>
