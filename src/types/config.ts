@@ -12,6 +12,12 @@ export type {
 } from "./booknavConfig";
 export type { CommentConfig } from "./commentConfig";
 export type { CoverImageConfig } from "./coverImageConfig";
+export type {
+	DiscoverConfig,
+	DiscoverQuickLink,
+	DiscoverSearchEngine,
+	DiscoverWallpaperPreference,
+} from "./discoverConfig";
 export type { DisplaySettingsConfig } from "./displaySettingsConfig";
 export type { DynamicConfig } from "./dynamicConfig";
 export type { SakuraConfig } from "./effectsConfig";

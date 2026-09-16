@@ -28,7 +28,9 @@ let mode: LIGHT_DARK_MODE = $state(LIGHT_MODE);
 let displayedMode: LIGHT_DARK_MODE = $state(LIGHT_MODE); // 显示的实际主题（在system模式下会随系统变化）
 
 // 获取动画起点：鼠标点击使用点击坐标，键盘触发使用当前菜单项中心点
-function getEventOrigin(event?: MouseEvent): { x: number; y: number } | undefined {
+function getEventOrigin(
+	event?: MouseEvent,
+): { x: number; y: number } | undefined {
 	if (!event) {
 		return undefined;
 	}
