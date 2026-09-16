@@ -10,13 +10,14 @@ from app.core.config import Settings, get_settings
 from app.llm.openai_compatible import MissingAPIKeyError, OpenAICompatibleProvider
 from app.schemas.chat import ChatRequest
 from app.services.chat import ChatService
+from app.services.article import ArticleService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/agent", tags=["agent"])
 
 
 def get_chat_service(settings: Annotated[Settings, Depends(get_settings)]) -> ChatService:
-    return ChatService(OpenAICompatibleProvider(settings))
+    return ChatService(OpenAICompatibleProvider(settings), ArticleService(settings.furinafans_content_dir))
 
 
 @router.post("/chat", response_class=EventSourceResponse)

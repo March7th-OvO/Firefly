@@ -1,4 +1,5 @@
 import { streamChat } from "./chat-client";
+import { getPageContext } from "./page-context";
 import type { ChatMessage } from "./types";
 
 interface ChatStore {
@@ -74,7 +75,7 @@ function createChat(): ChatStore {
 
 		try {
 			await streamChat(
-				{ message: trimmed },
+				{ message: trimmed, context: getPageContext() },
 				{
 					onStart: () =>
 						updateAssistant(assistantId, (message) => ({

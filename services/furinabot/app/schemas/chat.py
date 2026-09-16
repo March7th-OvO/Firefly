@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 
 class PageContext(BaseModel):
+    article_id: str | None = Field(default=None, validation_alias=AliasChoices("articleId", "article_id"))
     title: str | None = None
     url: str | None = None
 

@@ -15,12 +15,12 @@ uv run uvicorn app.main:app --reload --port 8000
 `POST /api/agent/chat` 接受 JSON：
 
 ```json
-{"message":"你好","session_id":null,"context":{"title":"可选页面标题","url":"https://example.com"}}
+{"message":"这篇文章讲什么？","context":{"articleId":"cloudflare-r2","title":"页面标题","url":"/posts/cloudflare-r2/"}}
 ```
 
 返回 `text/event-stream`，事件顺序为 `message.start`（包含 `messageId`）、多个 `message.delta`（包含 `text`）、`message.done`。生成失败时发送 `error`（包含 `code` 和 `message`），不再发送 `message.done`。客户端中断连接时，后端会取消上游流。
 
-`session_id` 和 `context` 已保留在请求协议中，但当前不保存会话，也不把页面标题或 URL 当作文章正文发送给模型。没有 RAG、数据库或 Agent Tool。密钥只在服务端使用，`.env` 已被 Git 忽略。
+`session_id` 不保存会话。构建会生成 `dist/ai/articles.json` 和公开文章正文；服务端通过 `FURINAFANS_CONTENT_DIR` 读取它们，本地从 `services/furinabot` 运行时默认使用 `../../dist/ai`，生产环境可设为 `/var/www/Furinafans/ai`。草稿和密码文章均不进入索引。页面标题和 URL 不被当作可信正文。没有向量库、数据库或 Agent Tool。密钥只在服务端使用，`.env` 已被 Git 忽略。
 
 ```bash
 uv run pytest -q

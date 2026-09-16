@@ -1,5 +1,8 @@
+import type { PageContext } from "./page-context";
+
 export interface ChatRequest {
 	message: string;
+	context: PageContext;
 }
 
 export interface ChatStreamCallbacks {
@@ -51,7 +54,10 @@ export async function streamChat(
 				"Content-Type": "application/json",
 				Accept: "text/event-stream",
 			},
-			body: JSON.stringify({ message: request.message }),
+			body: JSON.stringify({
+				message: request.message,
+				context: request.context,
+			}),
 			signal,
 		});
 
