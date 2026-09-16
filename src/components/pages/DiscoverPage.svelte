@@ -835,18 +835,15 @@
     cursor: pointer;
     transition:
       transform 380ms ease,
-      background 180ms ease,
       opacity 280ms ease;
   }
 
-  .clock-block:hover,
   .clock-block:focus-visible {
-    background: rgba(255, 255, 255, 0.08);
     outline: none;
   }
 
-  .clock-block:hover .time,
-  .clock-block:focus-visible .time {
+  /* 放大仅由时间行本身的指针悬停触发，不受农历、日期或按钮空白区影响。 */
+  .time:hover {
     transform: scale(1.1);
   }
 
@@ -896,7 +893,19 @@
     justify-content: center;
     width: 0.875rem;
     height: 3.4375rem;
+    font-size: 0;
     opacity: 0;
+  }
+
+  .separator::before {
+    /* 两个圆点以容器中心为轴对称排列，避免字体冒号的字面基线偏移。 */
+    content: "";
+    width: 0.375rem;
+    height: 0.375rem;
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 1rem currentColor;
+    transform: translateY(-0.5rem);
   }
 
   .separator.is-visible {
@@ -953,15 +962,13 @@
   }
 
   .search-wrap {
-    position: relative;
+    /* 搜索区脱离舞台网格，始终以视口中心为基准定位。 */
+    position: absolute;
     z-index: 4;
-    align-self: start;
-    width: min(52rem, 82vw);
-    transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .discover-shell.search-active .search-wrap {
-    transform: translateY(-4.25rem);
+    top: 50%;
+    left: 50%;
+    width: min(43.2rem, calc(100vw - 2rem));
+    transform: translate(-50%, -50%);
   }
 
   .discover-shell.search-active .clock-block {
@@ -970,41 +977,31 @@
   }
 
   .search-bar {
+    /* 三段无间隙拼接：3.6 + 36 + 3.6 = 43.2rem，窄屏时只压缩中间输入框。 */
     display: grid;
-    grid-template-columns: 3.5rem 1fr 3.5rem;
+    grid-template-columns: 3.6rem minmax(0, 1fr) 3.6rem;
     align-items: center;
-    height: 3.75rem;
-    background: linear-gradient(
-      110deg,
-      rgba(20, 39, 73, 0.66),
-      rgba(38, 25, 59, 0.55)
-    );
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 1.1rem;
+    height: 2.7rem;
+    color: white;
+    /* 背景透明度从 0.76 减半至 0.38，并与其他毛玻璃组件统一使用天依蓝。 */
+    background: rgba(102, 204, 255, 0.38);
+    border-radius: 9999px;
     box-shadow:
       0 1.2rem 3rem rgba(4, 9, 24, 0.2),
-      inset 0 1px rgba(255, 255, 255, 0.14);
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px) saturate(1.3);
-    transition:
-      border-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .search-bar:focus-within {
-    border-color: rgba(98, 229, 255, 0.8);
-    box-shadow:
-      0 1.2rem 3rem rgba(4, 9, 24, 0.25),
-      0 0 0 3px rgba(61, 220, 255, 0.13);
   }
 
   .search-bar input {
+    box-sizing: border-box;
     min-width: 0;
     width: 100%;
+    height: 2.7rem;
     padding: 0 0.5rem;
     color: white;
-    font: inherit;
-    font-size: 1.04rem;
-    font-weight: 550;
+    font-family: "Chiron GoRound TC Variable", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
     text-align: center;
     background: transparent;
     border: 0;
@@ -1013,6 +1010,9 @@
 
   .search-bar input::placeholder {
     color: rgba(255, 255, 255, 0.72);
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
   }
 
   .search-bar input::-webkit-search-cancel-button {
@@ -1021,32 +1021,31 @@
 
   .engine-wrap {
     position: relative;
+    height: 2.7rem;
   }
 
   .engine-button,
   .search-button {
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    margin: auto;
+    width: 100%;
+    height: 2.7rem;
+    padding: 0;
     color: white;
     font-weight: 750;
     background: transparent;
     border: 0;
-    border-radius: 0.8rem;
+    border-radius: 9999px;
     cursor: pointer;
-    transition:
-      background 160ms ease,
-      transform 160ms ease;
+    transition: background-color 160ms ease;
   }
 
   .engine-button:hover,
   .search-button:hover,
   .engine-button:focus-visible,
   .search-button:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
-    transform: scale(1.04);
+    /* 焦点只加深按钮本身，形成截图中的端部胶囊，不改变整条背景。 */
+    background: rgba(3, 36, 48, 0.48);
     outline: none;
   }
 
@@ -1060,7 +1059,7 @@
     z-index: 6;
     top: calc(100% + 0.6rem);
     padding: 0.45rem;
-    background: rgba(18, 30, 57, 0.76);
+    background: rgba(102, 204, 255, 0.38);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0.9rem;
     box-shadow: 0 1rem 3rem rgba(4, 9, 24, 0.32);
@@ -1097,14 +1096,14 @@
 
   .engine-menu button {
     min-height: 3rem;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(102, 204, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .engine-menu button:hover,
   .engine-menu button.active,
   .suggestions button:hover {
-    background: rgba(86, 222, 255, 0.15);
+    background: rgba(102, 204, 255, 0.24);
   }
 
   .engine-menu button.active {
@@ -1118,7 +1117,7 @@
     width: 1.6rem;
     height: 1.6rem;
     font-size: 0.72rem;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(102, 204, 255, 0.18);
     border-radius: 0.45rem;
   }
 
@@ -1140,7 +1139,7 @@
     max-width: min(100%, 46rem);
     margin-top: clamp(2.5rem, 9vh, 7rem);
     padding: 0.55rem;
-    background: rgba(47, 65, 100, 0.44);
+    background: rgba(102, 204, 255, 0.32);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 1.15rem;
     box-shadow: 0 1rem 3rem rgba(4, 9, 24, 0.18);
@@ -1175,7 +1174,7 @@
 
   .quick-dock a:hover,
   .quick-dock a:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(102, 204, 255, 0.22);
     transform: translateY(-2px);
     outline: none;
   }
@@ -1188,8 +1187,8 @@
     font-size: 1.45rem;
     background: linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.22),
-      rgba(255, 255, 255, 0.06)
+      rgba(102, 204, 255, 0.26),
+      rgba(102, 204, 255, 0.08)
     );
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 0.7rem;
@@ -1214,7 +1213,7 @@
     padding: 0;
     color: white;
     font-size: 1.5rem;
-    background: rgba(25, 40, 70, 0.5);
+    background: rgba(102, 204, 255, 0.32);
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 0.9rem;
     box-shadow: 0 0.7rem 2rem rgba(3, 9, 24, 0.2);
@@ -1229,7 +1228,7 @@
   .corner-actions button:hover,
   .corner-actions a:focus-visible,
   .corner-actions button:focus-visible {
-    background: rgba(74, 211, 244, 0.26);
+    background: rgba(102, 204, 255, 0.46);
     transform: translateX(-2px);
     outline: none;
   }
@@ -1254,8 +1253,8 @@
     color: rgba(255, 255, 255, 0.94);
     background: linear-gradient(
       145deg,
-      rgba(40, 63, 100, 0.72),
-      rgba(46, 35, 75, 0.58)
+      rgba(102, 204, 255, 0.42),
+      rgba(102, 204, 255, 0.28)
     );
     border: 1px solid rgba(255, 255, 255, 0.26);
     border-radius: 1.25rem;
@@ -1303,7 +1302,7 @@
     padding: 0;
     color: white;
     font-size: 1.35rem;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(102, 204, 255, 0.16);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 0.75rem;
     cursor: pointer;
@@ -1311,7 +1310,7 @@
 
   .settings-header button:hover,
   .settings-header button:focus-visible {
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(102, 204, 255, 0.28);
     outline: none;
   }
 
@@ -1356,7 +1355,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 0.35rem;
     padding: 0.35rem;
-    background: rgba(9, 20, 45, 0.2);
+    background: rgba(102, 204, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.8rem;
   }
@@ -1376,16 +1375,12 @@
 
   .segmented button:hover {
     color: white;
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(102, 204, 255, 0.16);
   }
 
   .segmented button.active {
     color: white;
-    background: linear-gradient(
-      120deg,
-      rgba(49, 223, 241, 0.28),
-      rgba(147, 116, 255, 0.28)
-    );
+    background: rgba(102, 204, 255, 0.3);
     border-color: rgba(104, 230, 255, 0.68);
     box-shadow:
       0 0 0 2px rgba(83, 214, 255, 0.1),
@@ -1403,7 +1398,7 @@
     color: white;
     font: inherit;
     text-align: left;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(102, 204, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.78rem;
     cursor: pointer;
@@ -1413,7 +1408,7 @@
   }
 
   .setting-row:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(102, 204, 255, 0.24);
     border-color: rgba(255, 255, 255, 0.16);
   }
 
@@ -1438,7 +1433,7 @@
     flex: 0 0 auto;
     width: 2.55rem;
     height: 1.45rem;
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(102, 204, 255, 0.22);
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 999px;
     transition:
@@ -1459,7 +1454,7 @@
   }
 
   .switch.on {
-    background: linear-gradient(110deg, #2ad6ee, #8f82ff);
+    background: #66ccff;
     border-color: rgba(117, 231, 255, 0.72);
   }
 
@@ -1531,25 +1526,11 @@
     }
 
     .search-wrap {
-      width: min(100%, 34rem);
-    }
-
-    .discover-shell.search-active .search-wrap {
-      transform: translateY(-2.5rem);
+      width: calc(100vw - 2rem);
     }
 
     .discover-shell.search-active .clock-block {
       transform: translateY(-0.8rem);
-    }
-
-    .search-bar {
-      grid-template-columns: 3rem 1fr 3rem;
-      height: 3.4rem;
-      border-radius: 1rem;
-    }
-
-    .search-bar input {
-      font-size: 0.96rem;
     }
 
     .engine-menu {
