@@ -155,6 +155,7 @@ export default defineConfig({
 				"fa7-regular": ["*"],
 				"fa7-solid": ["*"],
 				"simple-icons": ["*"],
+				cib: ["bing"],
 				mdi: ["*"],
 				mingcute: ["*"],
 			},

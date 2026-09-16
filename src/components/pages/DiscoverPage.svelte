@@ -455,7 +455,7 @@
       </div>
     </button>
 
-    <div class="search-wrap" bind:this={searchContainer}>
+    <div class="search-wrap" class:input-focused={searchFocused} bind:this={searchContainer}>
       <form class="search-bar" onsubmit={submitSearch} role="search">
         <div class="engine-wrap">
           <button
@@ -465,7 +465,7 @@
             aria-label={`选择搜索引擎，当前为 ${selectedEngine?.name ?? "搜索"}`}
             aria-expanded={engineMenuOpen}
           >
-            <span>{selectedEngine?.badge ?? "搜"}</span>
+            <Icon icon={selectedEngine?.icon ?? "material-symbols:search"} />
           </button>
         </div>
         <input
@@ -496,7 +496,7 @@
               onclick={() => setEngine(engine)}
               role="menuitem"
             >
-              <span class="engine-badge">{engine.badge}</span>
+              <Icon icon={engine.icon} class="engine-icon" />
               {engine.name}
             </button>
           {/each}
@@ -753,7 +753,7 @@
     filter: blur(var(--wallpaper-blur, 0px));
     transform: scale(var(--wallpaper-scale, 1));
     transition:
-      filter 380ms ease,
+      filter 285ms ease,
       transform 500ms ease,
       opacity 400ms ease;
   }
@@ -969,6 +969,12 @@
     left: 50%;
     width: min(43.2rem, calc(100vw - 2rem));
     transform: translate(-50%, -50%);
+    transition: transform 285ms ease;
+  }
+
+  .search-wrap.input-focused {
+    /* 仅输入框获得焦点时抬升搜索栏，不改变两侧按钮的独立交互。 */
+    transform: translate(-50%, calc(-50% - 2rem));
   }
 
   .discover-shell.search-active .clock-block {
@@ -1111,14 +1117,12 @@
     box-shadow: inset 0 0 0 1px rgba(164, 129, 255, 0.36);
   }
 
-  .engine-badge {
-    display: grid;
-    place-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    font-size: 0.72rem;
-    background: rgba(102, 204, 255, 0.18);
-    border-radius: 0.45rem;
+  .engine-button :global(svg),
+  .engine-menu button :global(svg) {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    color: currentColor;
   }
 
   .suggestions {

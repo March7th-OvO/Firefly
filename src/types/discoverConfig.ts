@@ -7,8 +7,8 @@ export type DiscoverSearchEngine = {
 	name: string;
 	/** 搜索地址模板，使用 {query} 作为关键词占位符。 */
 	url: string;
-	/** 搜索框左侧显示的短标识，建议使用 1～2 个字符。 */
-	badge: string;
+	/** 搜索框与引擎菜单使用的单色品牌图标。 */
+	icon: string;
 };
 
 export type DiscoverQuickLink = {

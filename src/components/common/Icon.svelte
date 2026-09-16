@@ -10,11 +10,15 @@
 import Iconify, { addCollection } from "@iconify/svelte/offline";
 
 import iconsData from "@/constants/icons-data.json";
+import searchEngineIconsData from "@/constants/search-engine-icons.json";
+
+// 搜索引擎品牌图标单独存放，避免把完整品牌图标集合打包进 Svelte 页面。
+const iconCollections = { ...iconsData, ...searchEngineIconsData };
 
 // 注册图标集合（模块加载时执行一次）
 let collectionsAdded = false;
 if (!collectionsAdded) {
-	for (const [, data] of Object.entries(iconsData)) {
+	for (const [, data] of Object.entries(iconCollections)) {
 		addCollection(data as Parameters<typeof addCollection>[0]);
 	}
 	collectionsAdded = true;
@@ -32,7 +36,7 @@ let { icon, class: className = "", style = "" }: Props = $props();
 const iconExists = $derived(() => {
 	const [prefix, name] = icon.split(":");
 	if (!prefix || !name) return false;
-	const collection = (iconsData as Record<string, unknown>)[prefix] as
+	const collection = (iconCollections as Record<string, unknown>)[prefix] as
 		| { icons?: Record<string, unknown> }
 		| undefined;
 	return collection?.icons?.[name] !== undefined;
