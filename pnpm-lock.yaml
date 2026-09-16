@@ -41,6 +41,9 @@ importers:
       '@fancyapps/ui':
         specifier: ^6.1.14
         version: 6.1.14
+      '@fontsource-variable/chiron-goround-tc':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource-variable/noto-sans-sc':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1604,6 +1607,9 @@ packages:
 
   '@fancyapps/ui@6.1.14':
     resolution: {integrity: sha512-cBV73XXHrc0qMca+PJJ6qay3xweIgsoYse13rGRstgUs0xA5WAv1tgbSzPCIOOjiLs2S2jiVFJxyszgvgyfxMg==}
+
+  '@fontsource-variable/chiron-goround-tc@5.3.0':
+    resolution: {integrity: sha512-tLGWGI8fVZEBJSa6IdBqvgfXoVVxOKxuqBDdyS+3pGtDnix1adtxPHJbbiA9iGqGc1+p/ezPAFLTmloeiH6s7g==}
 
   '@fontsource-variable/noto-sans-sc@5.3.0':
     resolution: {integrity: sha512-lNar1dF7Ik/lHNPo/7JWG0TolXY29LtsqYgMvEysooZ5bsO9uH4shJmRrwyJ3PjyTPljhpMJEK0jDuLSU4vJ1w==}
@@ -7852,6 +7858,8 @@ snapshots:
       '@expressive-code/core': 0.44.2
 
   '@fancyapps/ui@6.1.14': {}
+
+  '@fontsource-variable/chiron-goround-tc@5.3.0': {}
 
   '@fontsource-variable/noto-sans-sc@5.3.0': {}
 
