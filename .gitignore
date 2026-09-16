@@ -20,6 +20,13 @@ pnpm-debug.log*
 .env
 .env.production
 
+# FurinaBot Python service runtime files
+services/furinabot/.env
+services/furinabot/.venv/
+services/furinabot/.pytest_cache/
+services/furinabot/**/__pycache__/
+services/furinabot/**/*.py[cod]
+
 # macOS-specific files
 .DS_Store
 

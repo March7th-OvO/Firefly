@@ -1,0 +1,111 @@
+.furina-bot {
+	--furina-panel-bg: #fffefa;
+	--furina-text-primary: #213b4d;
+	--furina-border: #dfe8e9;
+	--furina-primary: #416f8d;
+	--furina-radius: 18px;
+	--furina-shadow: 0 28px 80px rgba(29, 70, 91, 0.22), 0 5px 18px rgba(29, 70, 91, 0.08);
+	position: relative;
+	z-index: 1001;
+}
+
+.furina-bot .furina-launcher {
+	position: fixed; right: 1rem; bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;
+	height: 3.625rem; padding: 0 1.25rem 0 0.8125rem; color: white; font-size: 0.8125rem;
+	font-weight: 600; letter-spacing: 0.06em; background: #315d79; border: 1px solid #a6c3cf;
+	border-radius: 1.875rem; box-shadow: 0 0.875rem 2.125rem rgba(38, 81, 104, 0.29); cursor: pointer;
+	transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.furina-bot .furina-launcher:hover { background: #254d68; box-shadow: 0 1.125rem 2.5rem rgba(38, 81, 104, 0.35); transform: translateY(-0.1875rem); }
+.furina-bot .launcher-spark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; color: #d8eaf0; font-size: 1.25rem; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; }
+.furina-bot .launcher-arrow { margin-left: 0.3125rem; color: #adcbd9; font-size: 1.0625rem; }
+
+/* 文章页已有五个悬浮控件，入口固定在控件列上方。 */
+body:has(.floating-controls-container) .furina-bot .furina-launcher { bottom: 21.5rem; }
+
+.furina-bot .furina-panel {
+	position: fixed; right: 1.5rem; bottom: 1.5rem; display: flex; flex-direction: column; width: 25rem; height: 37.5rem;
+	max-height: calc(100dvh - 3rem); background: var(--furina-panel-bg); border: 1px solid #c8d8db;
+	border-radius: var(--furina-radius); box-shadow: var(--furina-shadow); overflow: hidden;
+	animation: furinabot-panel-in 0.27s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.furina-bot .furina-panel.is-closing { pointer-events: none; animation: furinabot-panel-out 0.2s ease-in both; }
+@keyframes furinabot-panel-in { from { opacity: 0; transform: translateY(0.75rem) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes furinabot-panel-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(0.625rem) scale(0.98); } }
+
+.furina-bot .furina-header { display: flex; align-items: center; gap: 0.6875rem; min-height: 4.75rem; padding: 0 1.125rem; background: rgb(255 255 255 / 83%); border-bottom: 1px solid var(--furina-border); }
+.furina-bot .furina-avatar, .furina-bot .assistant-avatar { display: grid; flex: none; place-items: center; color: #e8f5f9; background: linear-gradient(145deg, #80a7b6, #3f6e8c); }
+.furina-bot .furina-avatar { width: 2.4375rem; height: 2.4375rem; font-size: 1.1875rem; border-radius: 0.75rem; box-shadow: 0 0.25rem 0.75rem rgba(56, 111, 137, 0.2); }
+.furina-bot .header-identity { display: flex; flex-direction: column; gap: 0.1875rem; }
+.furina-bot .header-identity strong { color: #294f66; font-family: Georgia, serif; font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.02em; }
+.furina-bot .header-identity span { display: flex; align-items: center; gap: 0.3125rem; color: #8b9da4; font-size: 0.625rem; }
+.furina-bot .header-identity i { width: 0.3125rem; height: 0.3125rem; background: #76ac9f; border-radius: 50%; }
+.furina-bot .header-actions { display: flex; align-items: center; gap: 0.25rem; margin-left: auto; }
+.furina-bot .header-actions button { width: 1.9375rem; height: 1.9375rem; padding: 0; color: #78929e; font-size: 1.5rem; line-height: 1; background: transparent; border: 0; border-radius: 0.5rem; cursor: pointer; }
+.furina-bot .header-actions button:hover { color: #315d79; background: #edf3f4; }
+
+.furina-bot .furina-message-list { flex: 1; min-height: 0; padding: 1.375rem 1.3125rem; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #c5d5d9 transparent; scrollbar-width: thin; }
+.furina-bot .furina-empty { display: flex; flex-direction: column; align-items: center; padding: 0.75rem 0.125rem 0.25rem; text-align: center; }
+.furina-bot .empty-ornament { position: relative; display: grid; place-items: center; width: 4rem; height: 4rem; background: radial-gradient(circle at 40% 35%, #f6faf9, #e7f0f1); border: 1px solid #d0dfe3; border-radius: 50%; box-shadow: 0 0.625rem 1.5625rem rgba(89, 138, 155, 0.11); }
+.furina-bot .empty-ornament::before, .furina-bot .empty-ornament::after { position: absolute; width: 4.875rem; height: 4.875rem; content: ""; border: 1px solid #e6eeef; border-radius: 50%; }
+.furina-bot .empty-ornament::after { width: 3.125rem; height: 3.125rem; border-color: #d0e2e7; }
+.furina-bot .empty-ornament span { z-index: 1; color: #608aa0; font-size: 1.875rem; }
+.furina-bot .empty-eyebrow { margin: 1.25rem 0 0.5rem; color: #9aafb8; font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.21em; }
+.furina-bot .furina-empty h2 { margin: 0; color: #2f5369; font-family: Georgia, serif; font-size: 1.625rem; font-weight: 600; }
+.furina-bot .empty-description { margin: 0.8125rem 0 1.125rem; color: #83959c; font-size: 0.75rem; line-height: 1.85; }
+.furina-bot .suggestion-list { display: grid; width: 100%; gap: 0.5rem; }
+.furina-bot .suggestion-list button { display: flex; align-items: center; gap: 0.75rem; width: 100%; height: 2.75rem; padding: 0 0.875rem; color: #496576; font-family: inherit; font-size: 0.75rem; text-align: left; background: #fff; border: 1px solid #dfe9ea; border-radius: 0.6875rem; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.2s; }
+.furina-bot .suggestion-list button:hover:not(:disabled) { background: #f0f6f6; border-color: #a8c6cf; transform: translateX(0.125rem); }
+.furina-bot .suggestion-icon { width: 1.4375rem; color: #74a1b0; font-size: 1.0625rem; text-align: center; }
+.furina-bot .suggestion-arrow { margin-left: auto; color: #a3bbc4; font-size: 0.9375rem; }
+.furina-bot .empty-footnote { margin: 1.125rem 0 0; color: #b0bec2; font-size: 0.625rem; letter-spacing: 0.07em; }
+
+.furina-bot .message-row { display: flex; margin: 0 0 1.375rem; animation: furinabot-message-in 0.2s ease-out both; }
+@keyframes furinabot-message-in { from { opacity: 0; transform: translateY(0.3125rem); } to { opacity: 1; transform: translateY(0); } }
+.furina-bot .user-row { justify-content: flex-end; }
+.furina-bot .user-bubble { max-width: 83%; padding: 0.6875rem 0.875rem; color: #2b5269; font-size: 0.8125rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; background: #dceaf0; border-radius: 0.875rem 0.875rem 0.25rem; }
+.furina-bot .assistant-row { align-items: flex-start; gap: 0.5625rem; }
+.furina-bot .assistant-avatar { width: 1.625rem; height: 1.625rem; font-size: 0.875rem; border-radius: 0.5rem; }
+.furina-bot .assistant-body { flex: 1; min-width: 0; padding-top: 0.25rem; }
+.furina-bot .assistant-name { margin-bottom: 0.5625rem; color: #6b91a2; font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.16em; }
+.furina-bot .assistant-markdown { color: #405969; font-size: 0.8125rem; line-height: 1.75; overflow-wrap: anywhere; }
+.furina-bot .assistant-markdown p { margin: 0 0 0.625rem; }
+.furina-bot .assistant-markdown p:last-child { margin-bottom: 0; }
+.furina-bot .assistant-markdown ul, .furina-bot .assistant-markdown ol { margin: 0.25rem 0 0.6875rem; padding-left: 1.1875rem; }
+.furina-bot .assistant-markdown li { margin-bottom: 0.1875rem; }
+.furina-bot .assistant-markdown strong { color: #285775; font-weight: 700; }
+.furina-bot .assistant-markdown code { padding: 0.125rem 0.25rem; color: #315e78; font-size: 0.75rem; background: #e8f0f2; border-radius: 0.25rem; }
+.furina-bot .assistant-markdown pre { padding: 0.75rem; overflow-x: auto; background: #e8f0f2; border-radius: 0.5rem; }
+.furina-bot .assistant-markdown pre code { padding: 0; background: none; }
+.furina-bot .assistant-markdown a { color: #316d93; }
+.furina-bot .typing-indicator { display: flex; gap: 0.25rem; padding: 0.3125rem 0; }
+.furina-bot .typing-indicator span { width: 0.3125rem; height: 0.3125rem; background: #86a7b5; border-radius: 50%; animation: furinabot-dot-pulse 1s infinite ease-in-out; }
+.furina-bot .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+.furina-bot .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes furinabot-dot-pulse { 50% { opacity: 0.45; transform: translateY(-0.25rem); } }
+.furina-bot .stream-cursor { display: inline-block; width: 0.3125rem; height: 0.8125rem; margin-left: 0.125rem; vertical-align: -0.125rem; background: #729caf; animation: furinabot-cursor-blink 0.8s steps(2) infinite; }
+@keyframes furinabot-cursor-blink { 50% { opacity: 0; } }
+.furina-bot .message-error { display: block; margin-top: 0.3125rem; color: #b85454; font-size: 0.6875rem; }
+
+.furina-bot .furina-composer { flex: none; padding: 0.8125rem 0.9375rem 0.75rem; background: #fffefa; border-top: 1px solid var(--furina-border); }
+.furina-bot .composer-field { position: relative; display: flex; align-items: flex-end; background: white; border: 1px solid #d7e3e5; border-radius: 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
+.furina-bot .composer-field:focus-within { border-color: #85aab9; box-shadow: 0 0 0 0.1875rem rgba(106, 157, 176, 0.12); }
+.furina-bot .composer-field textarea { flex: 1; min-width: 0; min-height: 3.375rem; max-height: 7.5rem; padding: 0.9375rem 0.5rem 0.625rem 0.875rem; color: var(--furina-text-primary); font-family: inherit; font-size: 0.75rem; line-height: 1.5; resize: vertical; background: transparent; border: 0; outline: none; }
+.furina-bot .composer-field textarea::placeholder { color: #a2b1b6; }
+.furina-bot .composer-action { display: grid; flex: none; place-items: center; width: 1.875rem; height: 1.875rem; margin: 0 0.5625rem 0.625rem 0; padding: 0; color: white; font-size: 1.25rem; line-height: 1; background: var(--furina-primary); border: 0; border-radius: 0.5rem; cursor: pointer; }
+.furina-bot .composer-action:disabled { background: #c5d5da; cursor: not-allowed; }
+.furina-bot .composer-action:not(:disabled):hover { background: #2c5a76; }
+.furina-bot .stop-action span { display: block; width: 0.625rem; height: 0.625rem; background: white; border-radius: 0.125rem; }
+.furina-bot .composer-caption { display: flex; justify-content: space-between; gap: 0.3125rem; margin-top: 0.5625rem; color: #afbec2; font-size: 0.5625rem; font-weight: 500; letter-spacing: 0.04em; }
+
+@media (max-width: 650px) {
+	body:has(.floating-controls-container) .furina-bot .furina-launcher { bottom: 1rem; }
+	.furina-bot .furina-panel { right: 0; bottom: 0; width: 100%; height: min(42.5rem, 94dvh); max-height: 94dvh; border-bottom: 0; border-radius: 1.25rem 1.25rem 0 0; }
+	.furina-bot .furina-message-list { padding: 1.375rem 1.1875rem; }
+	.furina-bot .furina-composer { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}
+@media (max-height: 590px) { .furina-bot .furina-panel { bottom: 0.5rem; max-height: calc(100dvh - 1rem); } }
+@media (prefers-reduced-motion: reduce) {
+	.furina-bot .furina-panel, .furina-bot .message-row, .furina-bot .typing-indicator span, .furina-bot .stream-cursor { animation: none; }
+	.furina-bot .furina-launcher, .furina-bot .suggestion-list button { transition: none; }
+}

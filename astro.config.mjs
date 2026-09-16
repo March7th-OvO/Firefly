@@ -357,6 +357,13 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 		server: {
+			proxy: {
+				// 开发时由 Astro 将聊天请求转发给本机 FastAPI，生产环境由 Nginx 承担同一职责。
+				"/api/agent": {
+					target: "http://127.0.0.1:8000",
+					changeOrigin: true,
+				},
+			},
 			watch: {
 				ignored: ["**/package/**", "**/Firefly-docs/**"],
 			},
