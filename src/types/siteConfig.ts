@@ -88,6 +88,7 @@ export type SiteConfig = {
 
 	// 页面开关配置
 	pages: {
+		discover: boolean; // 探索页面开关
 		booknav: boolean; // 书签导航页面开关
 		friends: boolean; // 友链页面开关
 		sponsor: boolean; // 打赏页面开关

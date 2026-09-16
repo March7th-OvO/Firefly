@@ -14,6 +14,7 @@ src/config/
 ├── commentConfig.ts          # 评论系统配置
 ├── coverImageConfig.ts       # 封面图配置
 ├── displaySettingsConfig.ts  # 设置面板配置
+├── discoverConfig.ts         # 探索页面配置
 ├── dynamicConfig.ts          # 动态页面配置
 ├── effectsConfig.ts          # 动画特效配置（樱花等）
 ├── expressiveCodeConfig.ts   # 代码高亮配置
@@ -57,6 +58,7 @@ import { profileConfig } from "@/config/profileConfig";
 | `commentConfig.ts` | 评论系统配置（Twikoo、Waline、Artalk、Giscus、Disqus） |
 | `coverImageConfig.ts` | 封面图配置（文章封面图、随机封面图 API） |
 | `displaySettingsConfig.ts` | 视图设置面板配置（面板总开关、各设置项开关） |
+| `discoverConfig.ts` | 探索页配置（壁纸来源、搜索引擎、快捷入口和时间默认值） |
 | `dynamicConfig.ts` | 动态页面配置（页面标题、描述、评论开关和每页显示数量） |
 | `effectsConfig.ts` | 动画特效配置（樱花数量、速度、尺寸等） |
 | `expressiveCodeConfig.ts` | 代码高亮配置（亮色/暗色主题、折叠、语言徽章） |

@@ -41,6 +41,9 @@ importers:
       '@fancyapps/ui':
         specifier: ^6.1.14
         version: 6.1.14
+      '@fontsource-variable/chiron-goround-tc':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource-variable/noto-sans-sc':
         specifier: ^5.3.0
         version: 5.3.0
@@ -222,6 +225,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.12
         version: 2.5.12
+      '@iconify-json/cib':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
@@ -1605,8 +1611,14 @@ packages:
   '@fancyapps/ui@6.1.14':
     resolution: {integrity: sha512-cBV73XXHrc0qMca+PJJ6qay3xweIgsoYse13rGRstgUs0xA5WAv1tgbSzPCIOOjiLs2S2jiVFJxyszgvgyfxMg==}
 
+  '@fontsource-variable/chiron-goround-tc@5.3.0':
+    resolution: {integrity: sha512-tLGWGI8fVZEBJSa6IdBqvgfXoVVxOKxuqBDdyS+3pGtDnix1adtxPHJbbiA9iGqGc1+p/ezPAFLTmloeiH6s7g==}
+
   '@fontsource-variable/noto-sans-sc@5.3.0':
     resolution: {integrity: sha512-lNar1dF7Ik/lHNPo/7JWG0TolXY29LtsqYgMvEysooZ5bsO9uH4shJmRrwyJ3PjyTPljhpMJEK0jDuLSU4vJ1w==}
+
+  '@iconify-json/cib@1.2.3':
+    resolution: {integrity: sha512-MMvRXVTHt82z3bYN19JDAjv/X8OBNC/1B3I334SV/1nyhdPeeyvJZVoI1cGuNqYznBjMnWxKPtIhhiVgGQ1CzQ==}
 
   '@iconify-json/fa7-brands@1.2.4':
     resolution: {integrity: sha512-60acXyxhQl1lddBH5YGzfQLkzlP9jqNcblFmgel7lJpgsVx/4QmrXAL90ARb8XhHX7dFMGRDmlqER9mq8aaz2g==}
@@ -7853,7 +7865,13 @@ snapshots:
 
   '@fancyapps/ui@6.1.14': {}
 
+  '@fontsource-variable/chiron-goround-tc@5.3.0': {}
+
   '@fontsource-variable/noto-sans-sc@5.3.0': {}
+
+  '@iconify-json/cib@1.2.3':
+    dependencies:
+      '@iconify/types': 2.0.0
 
   '@iconify-json/fa7-brands@1.2.4':
     dependencies:

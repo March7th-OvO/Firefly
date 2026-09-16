@@ -13,8 +13,14 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 	// 基础导航栏链接
 	const links: NavBarLink[] = [];
 
-	// 主页
-	links.push(LinkPresets.Home);
+	// 主页及其可配置子页面
+	// 当探索页关闭时，导航解析器会自动把仅剩的主页子项收敛为普通链接。
+	links.push({
+		name: "主页",
+		url: "#",
+		icon: "material-symbols:home",
+		children: [LinkPresets.Home, LinkPresets.Discover],
+	});
 
 	// 文章及其子菜单
 	links.push({
@@ -149,6 +155,14 @@ export const LinkPresets: Record<string, NavBarLink> = {
 		name: "主页",
 		url: "/",
 		icon: "material-symbols:home",
+	},
+	Discover: {
+		name: "探索",
+		url: "/discover/",
+		icon: "material-symbols:explore",
+		pageKey: "discover",
+		// 探索页使用独立全屏骨架，进出时采用完整页面导航。
+		noSwup: true,
 	},
 	Archive: {
 		name: "归档",

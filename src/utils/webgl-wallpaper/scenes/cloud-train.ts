@@ -133,11 +133,9 @@ float openingLayer(float start) {
 
 function cloudTrainTintRgb(hex: string): [number, number, number] {
 	if (!/^#[0-9a-f]{6}$/i.test(hex)) return [1, 1, 1];
-	return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [
-		number,
-		number,
-		number,
-	];
+	return [1, 3, 5].map(
+		(i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255,
+	) as [number, number, number];
 }
 
 class CloudTrainRenderer implements WebGLWallpaperScene {

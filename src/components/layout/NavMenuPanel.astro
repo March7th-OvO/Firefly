@@ -47,7 +47,8 @@ const navTitle = siteConfig.navbar.title || siteConfig.title;
                                         href={child.external ? child.url : url(child.url)}
                                         class="mobile-menu-item"
                                         data-nav-href={child.external ? undefined : url(child.url)}
-                                        target={child.external ? "_blank" : null}
+										target={child.external ? "_blank" : null}
+										data-no-swup={child.noSwup ? "" : undefined}
                                     >
 										{child.icon && <Icon name={child.icon} class="mobile-menu-item-icon" />}
                                         <span class="mobile-menu-item-label">{child.name}</span>
@@ -65,7 +66,8 @@ const navTitle = siteConfig.navbar.title || siteConfig.title;
                             href={link.external ? link.url : url(link.url)}
                             class="mobile-menu-item"
                             data-nav-href={link.external ? undefined : url(link.url)}
-                            target={link.external ? "_blank" : null}
+							target={link.external ? "_blank" : null}
+							data-no-swup={link.noSwup ? "" : undefined}
                         >
 							{link.icon && <Icon name={link.icon} class="mobile-menu-item-icon" />}
                             <span class="mobile-menu-item-label">{link.name}</span>

@@ -5,6 +5,8 @@ export type NavBarLink = {
 	icon?: string; // 菜单项图标
 	children?: NavBarLink[]; // 支持子菜单
 	pageKey?: string;
+	/** 跳过 Swup，适用于使用独立页面骨架的入口。 */
+	noSwup?: boolean;
 };
 
 export enum NavBarSearchMethod {

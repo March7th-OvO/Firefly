@@ -36,6 +36,7 @@
 		"@expressive-code/plugin-collapsible-sections": "^0.44.2",
 		"@expressive-code/plugin-line-numbers": "^0.44.2",
 		"@fancyapps/ui": "^6.1.14",
+		"@fontsource-variable/chiron-goround-tc": "5.3.0",
 		"@fontsource-variable/noto-sans-sc": "^5.3.0",
 		"@iconify-json/fa7-brands": "^1.2.4",
 		"@iconify-json/fa7-regular": "^1.2.3",
@@ -98,6 +99,7 @@
 	"devDependencies": {
 		"@astrojs/ts-plugin": "^1.10.11",
 		"@biomejs/biome": "2.5.12",
+		"@iconify-json/cib": "^1.2.3",
 		"@iconify-json/mdi": "^1.2.3",
 		"@iconify-json/svg-spinners": "^1.2.4",
 		"@tailwindcss/vite": "^4.3.3",

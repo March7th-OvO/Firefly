@@ -1,0 +1,95 @@
+---
+import type { ImageMetadata } from "astro";
+import HeaderTopRow from "@/components/layout/HeaderTopRow.astro";
+import NavMenuPanel from "@/components/layout/NavMenuPanel.astro";
+import DiscoverPage from "@/components/pages/DiscoverPage.svelte";
+import { discoverConfig, navbarMode, siteConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import Layout from "@/layouts/Layout.astro";
+import { getBackgroundImages } from "@/utils/layout-utils";
+import { resolveNavMenuLinks } from "@/utils/nav-menu-utils";
+import { url } from "@/utils/url-utils";
+
+if (!siteConfig.pages.discover) {
+	return Astro.redirect("/404/");
+}
+
+const imageFiles = import.meta.glob<ImageMetadata>(
+	"../assets/**/*.{png,jpg,jpeg,webp,avif}",
+	{ import: "default" },
+);
+
+/** 将 src/assets 下的配置路径解析为构建后的资源 URL。 */
+async function resolveWallpaperSource(source: string): Promise<string> {
+	if (
+		source.startsWith("http://") ||
+		source.startsWith("https://") ||
+		source.startsWith("data:")
+	) {
+		return source;
+	}
+	if (source.startsWith("/")) return url(source);
+
+	const importer = imageFiles[`../${source.replace(/^\.\//, "")}`];
+	if (!importer) return source;
+	const image = await importer();
+	return image.src;
+}
+
+const siteWallpapers = getBackgroundImages();
+const desktopWallpapers = await Promise.all(
+	siteWallpapers.desktop.map(resolveWallpaperSource),
+);
+const mobileWallpapers = await Promise.all(
+	siteWallpapers.mobile.map(resolveWallpaperSource),
+);
+
+// 内部链接统一适配 Astro base，外部 URL 保持不变。
+const resolvedConfig = {
+	...discoverConfig,
+	search: {
+		...discoverConfig.search,
+		engines: discoverConfig.search.engines.map((engine) => ({
+			...engine,
+			url: engine.url.startsWith("/") ? url(engine.url) : engine.url,
+		})),
+	},
+	quickLinks: discoverConfig.quickLinks
+		.filter((link) => !link.pageKey || siteConfig.pages[link.pageKey] !== false)
+		.map((link) => ({
+			...link,
+			url: link.external ? link.url : url(link.url),
+		})),
+};
+
+const title = discoverConfig.title || i18n(I18nKey.discover);
+const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
+---
+
+<Layout
+	title={title}
+	description={discoverConfig.description}
+	hasWallpaper={true}
+>
+	<HeaderTopRow navbarMode={navbarMode} navbarWidthFull={navbarWidthFull} />
+
+	<!-- Swup 需要的持久容器占位；探索页进出会完整加载，不参与局部布局交换。 -->
+	<div id="banner-overlay-container" hidden></div>
+	<div id="banner-dim-container" hidden></div>
+	<div id="left-sidebar-dynamic" hidden></div>
+	<div id="right-sidebar-dynamic" hidden></div>
+	<div id="floating-toc-wrapper" hidden></div>
+
+	<main id="swup-container" class="transition-main">
+		<h1 class="sr-only">{title}</h1>
+		<DiscoverPage
+			client:load
+			config={resolvedConfig}
+			{desktopWallpapers}
+			{mobileWallpapers}
+		/>
+	</main>
+
+	<NavMenuPanel links={resolveNavMenuLinks()} />
+</Layout>
