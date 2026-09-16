@@ -42,18 +42,23 @@
   let searchInput: HTMLInputElement | undefined = $state();
   let searchContainer: HTMLDivElement | undefined = $state();
 
-  let wallpaperPreference = $state(config.wallpaper.defaultPreference);
-  let wallpaperDimmed = $state(config.wallpaper.dimmed);
-  let wallpaperBlur = $state(config.wallpaper.blur);
-  let searchSuggestions = $state(config.search.suggestions);
-  let openInNewTab = $state(config.search.openInNewTab);
-  let showSeconds = $state(config.time.showSeconds);
-  let showLunar = $state(config.time.showLunar);
-  let use12Hour = $state(config.time.use12Hour);
-  let engineId = $state(config.search.defaultEngine);
+  // config 是父级传入的只读静态配置，仅取其初始值作为本地设置默认值，
+  // 之后由 localStorage 覆盖，因此这里只需一次性读取即可。
+  // svelte-ignore state_referenced_locally
+  const { wallpaper, search, time } = config;
+
+  let wallpaperPreference = $state(wallpaper.defaultPreference);
+  let wallpaperDimmed = $state(wallpaper.dimmed);
+  let wallpaperBlur = $state(wallpaper.blur);
+  let searchSuggestions = $state(search.suggestions);
+  let openInNewTab = $state(search.openInNewTab);
+  let showSeconds = $state(time.showSeconds);
+  let showLunar = $state(time.showLunar);
+  let use12Hour = $state(time.use12Hour);
+  let engineId = $state(search.defaultEngine);
 
   let siteWallpaperIndex = $state(0);
-  let randomWallpaperUrl = $state(withCacheBust(config.wallpaper.randomUrl));
+  let randomWallpaperUrl = $state(withCacheBust(wallpaper.randomUrl));
   let wallpaperFallbacks = $state(0);
 
   const selectedEngine = $derived(
@@ -262,6 +267,7 @@
   function toggleEngineMenu(): void {
     searchActive = true;
     engineMenuOpen = !engineMenuOpen;
+    // 点引擎按钮与点搜索栏等效：聚焦输入框并抬起搜索栏。
     focusSearchInput();
   }
 
@@ -461,6 +467,7 @@
           <button
             type="button"
             class="engine-button"
+            onmousedown={(event) => event.preventDefault()}
             onclick={toggleEngineMenu}
             aria-label={`选择搜索引擎，当前为 ${selectedEngine?.name ?? "搜索"}`}
             aria-expanded={engineMenuOpen}
@@ -493,6 +500,7 @@
             <button
               type="button"
               class:active={engine.id === selectedEngine?.id}
+              onmousedown={(event) => event.preventDefault()}
               onclick={() => setEngine(engine)}
               role="menuitem"
             >
@@ -556,7 +564,7 @@
         if (event.target === event.currentTarget) closeSettings();
       }}
     >
-      <section
+      <div
         class="settings-panel"
         role="dialog"
         aria-modal="true"
@@ -716,7 +724,7 @@
             </button>
           </section>
         </div>
-      </section>
+      </div>
     </div>
   {/if}
 </div>
