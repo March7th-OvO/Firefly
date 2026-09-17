@@ -28,6 +28,11 @@ const { config } = Astro.props;
 		title="和芙宁娜聊天"
 		hidden
 	></button>
+	<div class="furina-live2d-controls" hidden>
+		<button class="furina-expression-next" type="button" title="切换表情" aria-label="切换芙宁娜的表情">☺</button>
+		<button class="furina-expression-auto" type="button" title="自动轮播表情" aria-label="自动轮播表情" aria-pressed="true">↻</button>
+	</div>
+	<div class="furina-live2d-bubble" role="status" aria-live="polite" hidden></div>
 	<span class="furina-live2d-status" hidden></span>
 </div>
 
@@ -38,7 +43,21 @@ const { config } = Astro.props;
 	const trigger = container?.querySelector<HTMLButtonElement>(
 		".furina-live2d-trigger",
 	);
+	const controls = container?.querySelector<HTMLElement>(".furina-live2d-controls");
+	const nextButton = container?.querySelector<HTMLButtonElement>(".furina-expression-next");
+	const autoButton = container?.querySelector<HTMLButtonElement>(".furina-expression-auto");
+	const bubble = container?.querySelector<HTMLElement>(".furina-live2d-bubble");
+	const expressions = ["neutral", "surprised", "pout", "shy", "disdain", "happy", "sparkle"] as const;
+	const idleLines = ["欸，你也在这里呀？", "要不要聊聊今天看到的文章？", "哼哼，随时可以问我哦。", "今天也要保持好心情！"];
 	let loading: Promise<void> | undefined;
+	let expressionIndex = 0;
+	let autoExpressions = true;
+	let chatPhase: "idle" | "thinking" | "replying" = "idle";
+	let panelOpen = false;
+	let bubbleTimer: ReturnType<typeof setTimeout> | undefined;
+	let mouthUntil = 0;
+	let lastMouthChange = 0;
+	let mouthOpen = false;
 
 	// FurinaBot 是独立的 Svelte island，通过页面事件同步入口状态。
 	function announceLauncherState(): void {
@@ -81,6 +100,57 @@ const { config } = Astro.props;
 			container.appendChild(app.view);
 			const model = await Live2DModel.from(container.dataset.path || "");
 			app.stage.addChild(model);
+			// 同时保留实例引用和就绪事件，迟挂载的 island 也能取得模型。
+			Object.assign(window, { furinaLive2DModel: model });
+			window.dispatchEvent(new CustomEvent("furinabot:model-ready", { detail: model }));
+			const setExpression = (index: number): void => {
+				expressionIndex = (index + expressions.length) % expressions.length;
+				void model.expression(expressions[expressionIndex]);
+			};
+			const showBubble = (message: string): void => {
+				if (!bubble || container.hidden) return;
+				bubble.textContent = message;
+				bubble.hidden = false;
+				if (bubbleTimer) clearTimeout(bubbleTimer);
+				bubbleTimer = setTimeout(() => { bubble.hidden = true; }, 4500);
+			};
+			// 在 Cubism 计算当前帧绘制数据前写入口型，避免被模型更新覆盖。
+			model.internalModel.on("beforeModelUpdate", () => {
+				const now = performance.now();
+				if (now - lastMouthChange > 110) {
+					mouthOpen = !mouthOpen;
+					lastMouthChange = now;
+				}
+				model.internalModel.coreModel.setParameterValueById(
+					"ParamMouthForm",
+					chatPhase === "replying" && now < mouthUntil && mouthOpen ? 0.7 : 0,
+				);
+			});
+			nextButton?.addEventListener("click", () => setExpression(expressionIndex + 1));
+			autoButton?.addEventListener("click", () => {
+				autoExpressions = !autoExpressions;
+				autoButton.setAttribute("aria-pressed", String(autoExpressions));
+			});
+			window.addEventListener("furinabot:chat-activity", ((event: CustomEvent<{ phase: typeof chatPhase; text: string }>) => {
+				const previousPhase = chatPhase;
+				chatPhase = event.detail.phase;
+				if (chatPhase === "thinking" && previousPhase !== chatPhase) setExpression(1);
+				if (chatPhase === "replying") {
+					if (previousPhase !== chatPhase) setExpression(5);
+					if (event.detail.text) mouthUntil = performance.now() + Math.min(650, 160 + event.detail.text.length * 35);
+				}
+				if (chatPhase === "idle") mouthUntil = 0;
+			}) as EventListener);
+			window.addEventListener("furinabot:panel-state", ((event: CustomEvent<{ open: boolean }>) => {
+				panelOpen = event.detail.open;
+				if (panelOpen && bubble) bubble.hidden = true;
+			}) as EventListener);
+			setExpression(0);
+			window.setInterval(() => {
+				if (container.hidden || chatPhase !== "idle") return;
+				if (autoExpressions) setExpression((expressionIndex + 1 + Math.floor(Math.random() * (expressions.length - 1))) % expressions.length);
+				if (!panelOpen && Math.random() < 0.55) showBubble(idleLines[Math.floor(Math.random() * idleLines.length)]);
+			}, 14000);
 			// 按模型自身画布尺寸等比缩放，并让人物落在容器底部。
 			model.scale.set(
 				Math.min((width - 16) / model.width, (height - 16) / model.height) *
@@ -95,6 +165,7 @@ const { config } = Astro.props;
 				trigger.style.width = `${model.width}px`;
 				trigger.style.height = `${model.height}px`;
 				trigger.hidden = false;
+				if (controls) controls.hidden = false;
 				announceLauncherState();
 			}
 		} catch (error) {
@@ -159,6 +230,57 @@ const { config } = Astro.props;
 	.furina-live2d-trigger:focus-visible {
 		outline: 3px solid var(--primary, #79aaca);
 		outline-offset: 2px;
+	}
+
+	.furina-live2d-controls {
+		position: absolute;
+		z-index: 2;
+		right: 2px;
+		bottom: 88px;
+		display: grid;
+		gap: 7px;
+		pointer-events: auto;
+	}
+
+	.furina-live2d-controls[hidden],
+	.furina-live2d-bubble[hidden] {
+		display: none;
+	}
+
+	.furina-live2d-controls button {
+		width: 30px;
+		height: 30px;
+		border: 1px solid #b5dbe9;
+		border-radius: 50%;
+		background: #f8fdffed;
+		color: #456f88;
+		box-shadow: 0 2px 10px #25485a30;
+		cursor: pointer;
+	}
+
+	.furina-live2d-controls button[aria-pressed="false"] {
+		opacity: 0.55;
+	}
+
+	.furina-live2d-controls button:focus-visible {
+		outline: 2px solid #79aaca;
+	}
+
+	.furina-live2d-bubble {
+		position: absolute;
+		z-index: 2;
+		right: 24px;
+		bottom: calc(var(--furina-height) - 36px);
+		max-width: 180px;
+		padding: 8px 11px;
+		border: 1px solid #b5dbe9;
+		border-radius: 12px 12px 3px 12px;
+		background: #f8fdfff2;
+		color: #345d74;
+		font-size: 12px;
+		line-height: 1.5;
+		box-shadow: 0 3px 14px #25485a24;
+		pointer-events: none;
 	}
 
 	.furina-live2d[hidden] {

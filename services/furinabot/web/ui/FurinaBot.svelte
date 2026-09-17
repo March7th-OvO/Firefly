@@ -24,11 +24,17 @@ function openPanel(): void {
 	closeTimer = null;
 	closing = false;
 	open = true;
+	window.dispatchEvent(
+		new CustomEvent("furinabot:panel-state", { detail: { open: true } }),
+	);
 }
 
 function closePanel(): void {
 	if (closing) return;
 	closing = true;
+	window.dispatchEvent(
+		new CustomEvent("furinabot:panel-state", { detail: { open: false } }),
+	);
 	closeTimer = setTimeout(() => {
 		open = false;
 		closing = false;

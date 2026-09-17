@@ -15,6 +15,20 @@ function createId(): string {
 	return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
+// 聊天 store 与 Live2D 分属两个 island，用页面事件传递生成阶段。
+function announceActivity(
+	phase: "thinking" | "replying" | "idle",
+	text = "",
+): void {
+	if (typeof window !== "undefined") {
+		window.dispatchEvent(
+			new CustomEvent("furinabot:chat-activity", {
+				detail: { phase, text },
+			}),
+		);
+	}
+}
+
 function createChat(): ChatStore {
 	let messages = $state<ChatMessage[]>([]);
 	let isGenerating = $state(false);
@@ -35,6 +49,7 @@ function createChat(): ChatStore {
 		controller.abort();
 		controller = null;
 		isGenerating = false;
+		announceActivity("idle");
 		messages = messages.map((message) =>
 			message.status === "streaming" || message.status === "pending"
 				? { ...message, status: "done" }
@@ -55,6 +70,7 @@ function createChat(): ChatStore {
 		const assistantId = createId();
 		controller = requestController;
 		isGenerating = true;
+		announceActivity("thinking");
 		messages = [
 			...messages,
 			{
@@ -92,16 +108,20 @@ function createChat(): ChatStore {
 							...message,
 							sources,
 						})),
-					onStart: () =>
+					onStart: () => {
+						announceActivity("replying");
 						updateAssistant(assistantId, (message) => ({
 							...message,
 							status: "streaming",
-						})),
-					onDelta: (text) =>
+						}));
+					},
+					onDelta: (text) => {
+						announceActivity("replying", text);
 						updateAssistant(assistantId, (message) => ({
 							...message,
 							content: message.content + text,
-						})),
+						}));
+					},
 					onDone: () =>
 						updateAssistant(assistantId, (message) => ({
 							...message,
@@ -127,6 +147,7 @@ function createChat(): ChatStore {
 			if (controller === requestController) {
 				controller = null;
 				isGenerating = false;
+				announceActivity("idle");
 			}
 		}
 	}
