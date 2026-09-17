@@ -47,11 +47,12 @@ def page_prompt(request: ChatRequest) -> str:
 def route_request(message: str, has_article: bool) -> str:
     cross_article = bool(re.search(r"以前|之前|其他文章|跨文章|全站|结合.*文章|博客里|历史文章|previous|across articles", message, re.I))
     current_article = bool(re.search(r"这篇|本文|本篇|当前文章|这段|this article|current article", message, re.I))
-    catalog = bool(re.search(r"哪些文章|有什么文章|有没有.*文章|写过.*文章|写过.*系列|文章列表|哪些.*相关内容|list.*articles|articles.*about", message, re.I))
-    if has_article and current_article and not cross_article:
-        return "current"
+    # 文章页也可以查询全站目录；“相关文章”不应被当前文章上下文截住。
+    catalog = bool(re.search(r"哪些.*文章|有什么文章|有没有.*文章|写过.*文章|写过.*系列|文章列表|相关文章|相关的文章|推荐.*文章|文章推荐|哪些.*相关内容|list.*articles|articles.*about|related articles", message, re.I))
     if catalog:
         return "catalog"
+    if has_article and current_article and not cross_article:
+        return "current"
     if has_article and not cross_article:
         return "current"
     return "retrieval"

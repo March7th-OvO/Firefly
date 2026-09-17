@@ -41,6 +41,29 @@ def test_routing_and_keyword_retrieval(tmp_path) -> None:
     asyncio.run(run())
     assert route_request("总结这篇文章", True) == "current"
     assert route_request("你之前都写过哪些 Cloudflare 相关内容", True) == "catalog"
+    assert route_request("推荐一些关于摄影的相关文章", True) == "catalog"
+    assert route_request("这篇文章有哪些相关文章？", True) == "catalog"
+
+
+def test_related_articles_on_another_article_page_use_site_catalog(tmp_path) -> None:
+    catalog = [
+        {"id": "a", "title": "网站更新", "description": "站点公告", "tags": ["公告"], "url": "/posts/a/"},
+        {"id": "b", "title": "摄影入门", "description": "摄影技巧", "tags": ["摄影"], "url": "/posts/b/"},
+    ]
+    (tmp_path / "articles.json").write_text(json.dumps({"version": 1, "articles": catalog}), encoding="utf-8")
+    (tmp_path / "articles").mkdir()
+    (tmp_path / "articles" / "a.json").write_text(json.dumps({"id": "a", "content": "A 文章正文"}), encoding="utf-8")
+    service = ChatService(NoProvider(), ArticleService(tmp_path))
+
+    async def run() -> None:
+        plan = await service.prepare(ChatRequest(
+            message="推荐一些关于摄影的相关文章", context=PageContext(article_id="a")
+        ))
+        assert plan.mode == "catalog"
+        assert "摄影入门" in plan.prompt
+        assert "A 文章正文" not in plan.prompt
+
+    asyncio.run(run())
 
 
 def test_retrieval_events_include_sources(tmp_path) -> None:
