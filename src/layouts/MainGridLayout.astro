@@ -47,6 +47,7 @@ interface Props {
 		minutes?: number;
 	};
 	heading?: string;
+	furinaBotPageContext?: boolean;
 }
 
 const backgroundImages = getBackgroundImages();
@@ -66,6 +67,7 @@ const {
 	encrypted = false,
 	bannerPostMeta,
 	heading,
+	furinaBotPageContext = true,
 } = Astro.props;
 
 const isHomePageCheck = isHomePage(Astro.url.pathname);
@@ -133,6 +135,8 @@ const {
                     id="swup-container"
                     class="transition-main"
                     data-current-post-category={postCategory || ""}
+					data-furinabot-page-title={title || siteConfig.title}
+					data-furinabot-page-context={furinaBotPageContext ? "enabled" : "disabled"}
                 >
                 {/* 为每个页面提供一个隐藏的h1标题，用于SEO和可访问性 */}
                 <h1 class="sr-only">{heading || title}</h1>

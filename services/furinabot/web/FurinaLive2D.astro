@@ -29,7 +29,16 @@ const { config } = Astro.props;
 		hidden
 	></button>
 	<div class="furina-live2d-controls" hidden>
-		<button class="furina-expression-next" type="button" title="切换表情" aria-label="切换芙宁娜的表情">☺</button>
+		<div class="furina-expression-list" id="furina-expression-list" role="group" aria-label="选择芙宁娜的表情" aria-hidden="true" inert>
+			<button type="button" data-expression-index="0" aria-label="平静" aria-pressed="true"><span aria-hidden="true">😌</span><span class="furina-expression-name">平静</span></button>
+			<button type="button" data-expression-index="1" aria-label="惊讶" aria-pressed="false"><span aria-hidden="true">😮</span><span class="furina-expression-name">惊讶</span></button>
+			<button type="button" data-expression-index="2" aria-label="鼓嘴" aria-pressed="false"><span aria-hidden="true">😗</span><span class="furina-expression-name">鼓嘴</span></button>
+			<button type="button" data-expression-index="3" aria-label="害羞" aria-pressed="false"><span aria-hidden="true">😳</span><span class="furina-expression-name">害羞</span></button>
+			<button type="button" data-expression-index="4" aria-label="嫌弃" aria-pressed="false"><span aria-hidden="true">😒</span><span class="furina-expression-name">嫌弃</span></button>
+			<button type="button" data-expression-index="5" aria-label="开心" aria-pressed="false"><span aria-hidden="true">😊</span><span class="furina-expression-name">开心</span></button>
+			<button type="button" data-expression-index="6" aria-label="星星眼" aria-pressed="false"><span aria-hidden="true">🤩</span><span class="furina-expression-name">星星眼</span></button>
+		</div>
+		<button class="furina-expression-toggle" type="button" title="选择表情" aria-label="选择芙宁娜的表情" aria-controls="furina-expression-list" aria-expanded="false">😀</button>
 		<button class="furina-expression-auto" type="button" title="自动轮播表情" aria-label="自动轮播表情" aria-pressed="true">↻</button>
 	</div>
 	<div class="furina-live2d-bubble" role="status" aria-live="polite" hidden></div>
@@ -44,7 +53,9 @@ const { config } = Astro.props;
 		".furina-live2d-trigger",
 	);
 	const controls = container?.querySelector<HTMLElement>(".furina-live2d-controls");
-	const nextButton = container?.querySelector<HTMLButtonElement>(".furina-expression-next");
+	const expressionToggle = container?.querySelector<HTMLButtonElement>(".furina-expression-toggle");
+	const expressionList = container?.querySelector<HTMLElement>(".furina-expression-list");
+	const expressionButtons = expressionList?.querySelectorAll<HTMLButtonElement>("button[data-expression-index]");
 	const autoButton = container?.querySelector<HTMLButtonElement>(".furina-expression-auto");
 	const bubble = container?.querySelector<HTMLElement>(".furina-live2d-bubble");
 	const expressions = ["neutral", "surprised", "pout", "shy", "disdain", "happy", "sparkle"] as const;
@@ -52,6 +63,7 @@ const { config } = Astro.props;
 	let loading: Promise<void> | undefined;
 	let expressionIndex = 0;
 	let autoExpressions = true;
+	let expressionListOpen = false;
 	let chatPhase: "idle" | "thinking" | "replying" = "idle";
 	let panelOpen = false;
 	let bubbleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -105,7 +117,19 @@ const { config } = Astro.props;
 			window.dispatchEvent(new CustomEvent("furinabot:model-ready", { detail: model }));
 			const setExpression = (index: number): void => {
 				expressionIndex = (index + expressions.length) % expressions.length;
+				expressionButtons?.forEach((button, buttonIndex) => {
+					button.setAttribute("aria-pressed", String(buttonIndex === expressionIndex));
+				});
 				void model.expression(expressions[expressionIndex]);
+			};
+			const setExpressionListOpen = (open: boolean): void => {
+				expressionListOpen = open;
+				expressionList?.classList.toggle("is-open", open);
+				if (expressionList) {
+					expressionList.inert = !open;
+					expressionList.setAttribute("aria-hidden", String(!open));
+				}
+				expressionToggle?.setAttribute("aria-expanded", String(open));
 			};
 			const showBubble = (message: string): void => {
 				if (!bubble || container.hidden) return;
@@ -114,6 +138,18 @@ const { config } = Astro.props;
 				if (bubbleTimer) clearTimeout(bubbleTimer);
 				bubbleTimer = setTimeout(() => { bubble.hidden = true; }, 4500);
 			};
+			let wasAway = false;
+			let hasBeenVisible = !document.hidden;
+			// 只在标签页真正离开后返回时问候，不在首次加载时显示。
+			document.addEventListener("visibilitychange", () => {
+				if (document.hidden) {
+					if (hasBeenVisible) wasAway = true;
+				} else {
+					hasBeenVisible = true;
+					if (wasAway) showBubble("欢迎回来~！");
+					wasAway = false;
+				}
+			});
 			// 在 Cubism 计算当前帧绘制数据前写入口型，避免被模型更新覆盖。
 			model.internalModel.on("beforeModelUpdate", () => {
 				const now = performance.now();
@@ -126,7 +162,24 @@ const { config } = Astro.props;
 					chatPhase === "replying" && now < mouthUntil && mouthOpen ? 0.7 : 0,
 				);
 			});
-			nextButton?.addEventListener("click", () => setExpression(expressionIndex + 1));
+			expressionToggle?.addEventListener("click", () => setExpressionListOpen(!expressionListOpen));
+			expressionButtons?.forEach((button) => button.addEventListener("click", () => {
+				setExpression(Number(button.dataset.expressionIndex));
+				// 手动选定后暂停轮播，直到用户再次打开自动模式。
+				autoExpressions = false;
+				autoButton?.setAttribute("aria-pressed", "false");
+				setExpressionListOpen(false);
+				expressionToggle?.focus();
+			}));
+			document.addEventListener("pointerdown", (event) => {
+				if (expressionListOpen && !controls?.contains(event.target as Node)) setExpressionListOpen(false);
+			});
+			controls?.addEventListener("keydown", (event) => {
+				if (event.key === "Escape" && expressionListOpen) {
+					setExpressionListOpen(false);
+					expressionToggle?.focus();
+				}
+			});
 			autoButton?.addEventListener("click", () => {
 				autoExpressions = !autoExpressions;
 				autoButton.setAttribute("aria-pressed", String(autoExpressions));
@@ -258,12 +311,88 @@ const { config } = Astro.props;
 		cursor: pointer;
 	}
 
-	.furina-live2d-controls button[aria-pressed="false"] {
+	.furina-expression-auto[aria-pressed="false"] {
 		opacity: 0.55;
 	}
 
 	.furina-live2d-controls button:focus-visible {
 		outline: 2px solid #79aaca;
+	}
+
+	/* 胶囊从表情按钮上方向外舒展，收起时仍保留可过渡的盒子。 */
+	.furina-expression-list {
+		position: absolute;
+		right: -4px;
+		bottom: calc(100% + 8px);
+		display: grid;
+		gap: 4px;
+		padding: 5px;
+		border: 1px solid #b5dbe9;
+		border-radius: 22px;
+		background: #f8fdfff2;
+		box-shadow: 0 6px 20px #25485a30;
+		opacity: 0;
+		transform: translateY(14px) scale(0.82, 0.18);
+		transform-origin: bottom center;
+		visibility: hidden;
+		pointer-events: none;
+		transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, visibility 420ms;
+	}
+
+	.furina-expression-list.is-open {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+		visibility: visible;
+		pointer-events: auto;
+		transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, visibility 0ms;
+	}
+
+	.furina-expression-list button {
+		position: relative;
+		font-size: 17px;
+		line-height: 1;
+		transition: background 220ms ease, color 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.furina-expression-list button:hover,
+	.furina-expression-list button:focus-visible {
+		transform: scale(1.12);
+	}
+
+	.furina-expression-list button[aria-pressed="true"] {
+		background: #6ca9c8;
+		color: #fff;
+	}
+
+	.furina-expression-name {
+		position: absolute;
+		right: calc(100% + 12px);
+		top: 50%;
+		padding: 4px 8px;
+		border-radius: 7px;
+		background: #345d74;
+		color: #fff;
+		font-size: 11px;
+		white-space: nowrap;
+		opacity: 0;
+		transform: translate(5px, -50%);
+		pointer-events: none;
+		transition: opacity 180ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.furina-expression-list button:hover .furina-expression-name,
+	.furina-expression-list button:focus-visible .furina-expression-name {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.furina-expression-list,
+		.furina-expression-list.is-open,
+		.furina-expression-list button,
+		.furina-expression-name {
+			transition-duration: 0.01ms;
+		}
 	}
 
 	.furina-live2d-bubble {

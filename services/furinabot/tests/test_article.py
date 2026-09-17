@@ -35,6 +35,10 @@ def test_public_index_and_current_article(tmp_path) -> None:
             message="这篇文章讲什么？", context=PageContext(article_id="cloudflare", title="伪造标题", url="/fake/"),
         ))]
         assert result == ["ok"]
+        page = [part async for part in ChatService(provider, service).stream(ChatRequest(
+            message="当前页面是什么？", context=PageContext(article_id="cloudflare", title="伪造标题", url="/fake/"),
+        ))]
+        assert page == ["当前页面是「Cloudflare」（/posts/cloudflare/）。"]
 
     asyncio.run(run())
     assert "真实正文" in provider.prompt

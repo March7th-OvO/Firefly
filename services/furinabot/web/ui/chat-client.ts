@@ -4,7 +4,7 @@ import type { ArticleSource } from "./types";
 
 export interface ChatRequest {
 	message: string;
-	context: PageContext;
+	context: PageContext | null;
 }
 
 export interface ChatStreamCallbacks {
