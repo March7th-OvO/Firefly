@@ -1,3 +1,4 @@
+import { furinaBotSiteConfig } from "../../site-config";
 import type { PageContext } from "./page-context";
 import type { ArticleSource } from "./types";
 
@@ -53,7 +54,7 @@ export async function streamChat(
 ): Promise<void> {
 	try {
 		// Astro 的 trailingSlash: "always" 要求开发代理请求带末尾斜杠。
-		const response = await fetch("/api/agent/chat/", {
+		const response = await fetch(furinaBotSiteConfig.chatEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

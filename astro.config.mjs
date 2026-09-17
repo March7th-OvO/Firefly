@@ -26,6 +26,7 @@ import remarkAdmonitionToBlockquoteCallout from "remark-admonition-to-blockquote
 import remarkDirective from "remark-directive"; /* Handle directives */
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
+import { furinaBotDevProxy } from "./services/furinabot/dev-proxy.mjs";
 import {
 	commentConfig,
 	dynamicConfig,
@@ -357,13 +358,7 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 		server: {
-			proxy: {
-				// 开发时由 Astro 将聊天请求转发给本机 FastAPI，生产环境由 Nginx 承担同一职责。
-				"/api/agent": {
-					target: "http://127.0.0.1:8000",
-					changeOrigin: true,
-				},
-			},
+			proxy: furinaBotDevProxy,
 			watch: {
 				ignored: ["**/package/**", "**/Firefly-docs/**"],
 			},

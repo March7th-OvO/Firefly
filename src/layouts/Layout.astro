@@ -12,7 +12,6 @@ import MusicManager from "@components/features/MusicManager.astro";
 import MusicPlayerView from "@components/features/MusicPlayerView.astro";
 import SakuraEffect from "@components/features/SakuraEffect.astro";
 import WavesEffect from "@components/features/WavesEffect.astro";
-import FurinaBot from "@components/features/furinabot/FurinaBot.svelte";
 import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
 
 import {
@@ -39,6 +38,7 @@ import { getAuthorAvatarUrl, getSiteLogo } from "@/utils/schema-image";
 import { buildSiteGraph, toAbsoluteUrl } from "@/utils/schema-utils";
 import { getOgLocale } from "@/utils/site-config-utils";
 import { getCanonicalUrl, url } from "@/utils/url-utils";
+import FurinaBotIntegration from "../../services/furinabot/web/FurinaBotIntegration.astro";
 
 import "@/styles/main.css";
 import "@/styles/immersive-reading.css";
@@ -560,8 +560,8 @@ const ogImageAlt = propsOgImageAlt ?? pageTitle;
     <MusicManager />
     <slot />
 
-    <!-- 全站唯一的聊天入口；FastAPI 通过 /api/agent/ 提供同源 SSE 服务。 -->
-    <FurinaBot client:load />
+    <!-- FurinaBot 的模型与聊天 UI 由服务目录统一挂载。 -->
+    <FurinaBotIntegration />
 
     <!-- 播放器视图脚本：必须在 <slot /> 之后（解析到它时所有 widget 的 DOM 要已存在），
          且在 MusicManager 之后（swup 重跑按文档顺序，window.__fireflyMusic 得先就位） -->

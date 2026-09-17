@@ -1,5 +1,11 @@
 # FurinaBot Server
 
+## 站点集成
+
+FurinaBot 的站点侧设置统一放在 `services/furinabot/site-config.ts`，包括功能开关、聊天 API、文章标识，以及 Live2D 模型路径、Cubism Core 地址、位置和尺寸。前端组件位于 `services/furinabot/web/`，页面只需在 `src/layouts/Layout.astro` 挂载 `web/FurinaBotIntegration.astro`。文章页在 `src/pages/posts/[...slug].astro` 输出公开文章标识，供聊天上下文使用。
+
+模型静态文件位于 `public/furinabot/live2d/Furina/`，与通用 Pio 资源分开。开发代理配置位于 `services/furinabot/dev-proxy.mjs`，由 `astro.config.mjs` 引入；生产代理仍需将 `/api/agent` 转发到 Python 服务。构建索引的脚本位于 `services/furinabot/build/`，由根目录的 `package.json` 调用。更新上游主题时，通常只需检查这些少量接入点。
+
 需要 Python 3.12。首次运行：
 
 ```bash

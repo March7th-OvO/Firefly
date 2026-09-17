@@ -1,0 +1,16 @@
+---
+import { furinaBotSiteConfig } from "../site-config";
+import FurinaLive2D from "./FurinaLive2D.astro";
+import FurinaBot from "./ui/FurinaBot.svelte";
+---
+
+{
+	furinaBotSiteConfig.enable && (
+		<>
+			{furinaBotSiteConfig.live2d.enable && (
+				<FurinaLive2D config={furinaBotSiteConfig.live2d} />
+			)}
+			<FurinaBot client:load />
+		</>
+	)
+}

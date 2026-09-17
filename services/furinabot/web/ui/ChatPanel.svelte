@@ -1,11 +1,11 @@
 <script lang="ts">
 import ChatHeader from "./ChatHeader.svelte";
 import Composer from "./Composer.svelte";
+import type { chat as chatStore } from "./chat.svelte";
 import MessageList from "./MessageList.svelte";
-import type { chat } from "./chat.svelte";
 
 interface Props {
-	chat: typeof chat;
+	chat: typeof chatStore;
 	closing: boolean;
 	onClose: () => void;
 }

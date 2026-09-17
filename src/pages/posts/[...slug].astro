@@ -46,6 +46,7 @@ import {
 	toAbsoluteUrl,
 } from "@/utils/schema-utils";
 import { url } from "@/utils/url-utils";
+import { furinaBotSiteConfig } from "../../../services/furinabot/site-config";
 
 const showSponsorButton =
 	sponsorConfig.showButtonInPost && siteConfig.pages.sponsor;
@@ -218,7 +219,7 @@ const seriesData = await getSeriesPosts(entry);
   <KatexManager slot="head" />
 	{/* 仅公开且无密码的文章可作为 FurinaBot 正文上下文。 */}
 	{!entry.data.draft && !entry.data.password && (
-		<meta slot="head" name="furinabot:article-id" content={removeFileExtension(entry.id)} />
+		<meta slot="head" name={furinaBotSiteConfig.articleIdMetaName} content={removeFileExtension(entry.id)} />
 	)}
 
   <!-- og:article 结构化元数据 -->

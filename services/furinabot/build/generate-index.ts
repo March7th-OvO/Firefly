@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { glob } from "glob";
 import matter from "gray-matter";
-import { resolveSiteRoot } from "./site-root";
+import { resolveSiteRoot } from "../../../scripts/site-root";
 
 const sourceRoot = path.resolve("src/content/posts");
 const outputRoot = path.resolve(resolveSiteRoot(), "ai");

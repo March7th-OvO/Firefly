@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { resolveSiteRoot } from "./site-root";
+import { resolveSiteRoot } from "../../../scripts/site-root";
 
 interface ArticleMeta {
 	id: string;

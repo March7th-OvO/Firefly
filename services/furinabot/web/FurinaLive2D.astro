@@ -1,6 +1,6 @@
 ---
-import type { FurinaLive2DConfig } from "@/types/pioConfig";
 import { url } from "@/utils/url-utils";
+import type { FurinaLive2DConfig } from "../site-config";
 
 interface Props {
 	config: FurinaLive2DConfig;
@@ -12,33 +12,49 @@ const { config } = Astro.props;
 <div
 	id="furina-live2d"
 	class:list={["furina-live2d", config.position === "bottom-right" && "is-right"]}
-	style={`--furina-width: ${config.size.width}px; --furina-height: ${config.size.height}px;`}
+	style={`--furina-width: ${config.size.width}px; --furina-height: ${config.size.height}px; --furina-article-right: ${config.articleRightOffset};`}
 	data-path={url(config.path)}
+	data-core-url={config.coreUrl}
 	data-width={config.size.width}
 	data-height={config.size.height}
 	data-scale={config.scale}
 	data-hide-on-mobile={config.responsive.hideOnMobile}
 	data-mobile-breakpoint={config.responsive.mobileBreakpoint}
-	role="img"
-	aria-label="芙宁娜 Live2D 看板娘"
 >
+	<button
+		class="furina-live2d-trigger"
+		type="button"
+		aria-label="和芙宁娜聊天，打开 FurinaBot"
+		title="和芙宁娜聊天"
+		hidden
+	></button>
 	<span class="furina-live2d-status" hidden></span>
 </div>
 
 <script>
 	import * as PIXI from "pixi.js";
 
-	// Cubism Core 为 Live2D 官方托管的专有运行时，不将它复制进仓库。
-	const CORE_URL =
-		"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js";
 	const container = document.getElementById("furina-live2d");
+	const trigger = container?.querySelector<HTMLButtonElement>(
+		".furina-live2d-trigger",
+	);
 	let loading: Promise<void> | undefined;
+
+	// FurinaBot 是独立的 Svelte island，通过页面事件同步入口状态。
+	function announceLauncherState(): void {
+		window.dispatchEvent(new Event("furinabot:model-state"));
+	}
+
+	trigger?.addEventListener("click", () => {
+		window.dispatchEvent(new Event("furinabot:open"));
+	});
 
 	function loadCore(): Promise<void> {
 		if ("Live2DCubismCore" in window) return Promise.resolve();
 		return new Promise((resolve, reject) => {
 			const script = document.createElement("script");
-			script.src = CORE_URL;
+			// Cubism Core 由 Live2D 官方托管，不将专有运行时复制进仓库。
+			script.src = container?.dataset.coreUrl || "";
 			script.onload = () => resolve();
 			script.onerror = () => reject(new Error("Cubism Core 加载失败"));
 			document.head.appendChild(script);
@@ -72,6 +88,15 @@ const { config } = Astro.props;
 			);
 			model.x = (width - model.width) / 2;
 			model.y = height - model.height;
+			if (trigger) {
+				// 只让人物所在的区域接受点击，周围透明画布不阻挡页面操作。
+				trigger.style.left = `${model.x}px`;
+				trigger.style.top = `${model.y}px`;
+				trigger.style.width = `${model.width}px`;
+				trigger.style.height = `${model.height}px`;
+				trigger.hidden = false;
+				announceLauncherState();
+			}
 		} catch (error) {
 			console.error("Failed to load Furina Live2D model:", error);
 			if (status) {
@@ -87,6 +112,7 @@ const { config } = Astro.props;
 		const breakpoint = Number(container.dataset.mobileBreakpoint || 768);
 		const visible = !hideOnMobile || window.innerWidth > breakpoint;
 		container.hidden = !visible;
+		announceLauncherState();
 		if (visible) loading ??= loadFurina();
 	}
 
@@ -108,6 +134,31 @@ const { config } = Astro.props;
 	.furina-live2d.is-right {
 		left: auto;
 		right: 0;
+	}
+
+	/* 文章页悬浮控件占用最右侧，模型向左错开，保持底部入口可点。 */
+	:global(body:has(.floating-controls-container)) .furina-live2d.is-right {
+		right: var(--furina-article-right);
+	}
+
+	.furina-live2d-trigger {
+		position: absolute;
+		z-index: 1;
+		padding: 0;
+		background: transparent;
+		border: 0;
+		border-radius: 1rem;
+		cursor: pointer;
+		pointer-events: auto;
+	}
+
+	.furina-live2d-trigger[hidden] {
+		display: none;
+	}
+
+	.furina-live2d-trigger:focus-visible {
+		outline: 3px solid var(--primary, #79aaca);
+		outline-offset: 2px;
 	}
 
 	.furina-live2d[hidden] {
