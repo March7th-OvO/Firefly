@@ -1,4 +1,5 @@
 import type { PageContext } from "./page-context";
+import type { ArticleSource } from "./types";
 
 export interface ChatRequest {
 	message: string;
@@ -9,6 +10,9 @@ export interface ChatStreamCallbacks {
 	onStart?: () => void;
 	onDelta: (text: string) => void;
 	onDone?: () => void;
+	onRetrievalStart?: () => void;
+	onRetrievalResult?: (count: number) => void;
+	onSources?: (sources: ArticleSource[]) => void;
 	onError?: (error: Error) => void;
 }
 
@@ -48,7 +52,8 @@ export async function streamChat(
 	signal?: AbortSignal,
 ): Promise<void> {
 	try {
-		const response = await fetch("/api/agent/chat", {
+		// Astro 的 trailingSlash: "always" 要求开发代理请求带末尾斜杠。
+		const response = await fetch("/api/agent/chat/", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -87,6 +92,19 @@ export async function streamChat(
 					const item = parseEvent(frame);
 
 					if (item?.event === "message.start") callbacks.onStart?.();
+					if (item?.event === "retrieval.start") callbacks.onRetrievalStart?.();
+					if (
+						item?.event === "retrieval.result" &&
+						typeof item.data.count === "number"
+					) {
+						callbacks.onRetrievalResult?.(item.data.count);
+					}
+					if (
+						item?.event === "message.sources" &&
+						Array.isArray(item.data.sources)
+					) {
+						callbacks.onSources?.(item.data.sources as ArticleSource[]);
+					}
 					if (item?.event === "message.delta") {
 						if (typeof item.data.text !== "string") {
 							throw new Error("消息增量格式无效。");

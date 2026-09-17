@@ -27,6 +27,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 model=self.settings.llm_model,
                 instructions=system_prompt,
                 input=message,
+                max_output_tokens=self.settings.llm_max_output_tokens,
                 stream=True,
             ) as events:
                 async for event in events:

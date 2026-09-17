@@ -77,6 +77,21 @@ function createChat(): ChatStore {
 			await streamChat(
 				{ message: trimmed, context: getPageContext() },
 				{
+					onRetrievalStart: () =>
+						updateAssistant(assistantId, (message) => ({
+							...message,
+							retrievalCount: null,
+						})),
+					onRetrievalResult: (count) =>
+						updateAssistant(assistantId, (message) => ({
+							...message,
+							retrievalCount: count,
+						})),
+					onSources: (sources) =>
+						updateAssistant(assistantId, (message) => ({
+							...message,
+							sources,
+						})),
 					onStart: () =>
 						updateAssistant(assistantId, (message) => ({
 							...message,

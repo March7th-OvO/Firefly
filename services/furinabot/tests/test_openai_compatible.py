@@ -37,7 +37,12 @@ def test_responses_stream_is_adapted_to_text(monkeypatch) -> None:
             calls["client_closed"] = True
 
     monkeypatch.setattr(openai_compatible, "AsyncOpenAI", FakeClient)
-    settings = Settings(_env_file=None, llm_api_key="test-key", llm_model="test-model")
+    settings = Settings(
+        _env_file=None,
+        llm_api_key="test-key",
+        llm_model="test-model",
+        llm_max_output_tokens=2048,
+    )
     provider = openai_compatible.OpenAICompatibleProvider(settings)
 
     async def collect() -> list[str]:
@@ -45,7 +50,8 @@ def test_responses_stream_is_adapted_to_text(monkeypatch) -> None:
 
     assert asyncio.run(collect()) == ["你好", "！"]
     assert calls["request"] == {
-        "model": "test-model", "instructions": "系统提示", "input": "问题", "stream": True,
+        "model": "test-model", "instructions": "系统提示", "input": "问题",
+        "max_output_tokens": 2048, "stream": True,
     }
     assert calls["stream_closed"] is True
     assert calls["client_closed"] is True

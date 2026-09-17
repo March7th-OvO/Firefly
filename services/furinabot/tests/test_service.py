@@ -25,4 +25,14 @@ def test_chat_service_uses_provider_and_system_prompt() -> None:
     assert asyncio.run(collect()) == ["第一段", "第二段"]
     assert provider.received is not None
     assert provider.received[0] == "你好"
-    assert "Do not claim to know FurinaFans content" in provider.received[1]
+    assert "芙宁娜的口吻" in provider.received[1]
+
+
+def test_chat_service_uses_custom_system_prompt() -> None:
+    provider = RecordingProvider()
+
+    async def collect() -> list[str]:
+        return [text async for text in ChatService(provider, system_prompt="自定义芙宁娜提示词").stream(ChatRequest(message="你好"))]
+
+    assert asyncio.run(collect()) == ["第一段", "第二段"]
+    assert provider.received == ("你好", "自定义芙宁娜提示词")

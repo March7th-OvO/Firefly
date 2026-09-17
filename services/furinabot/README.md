@@ -8,7 +8,9 @@ copy .env.example .env
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
-在 `.env` 中填写服务端使用的 `LLM_API_KEY`。开发时也可通过环境变量覆盖配置。默认模型是 `gpt-5.6-luna`，默认地址是 OpenAI API；自定义 `LLM_BASE_URL` 的服务需要支持 Responses API 的流式事件。`/health` 和 `/docs` 可用于检查后端启动状态。
+在 `.env` 中填写服务端使用的 `LLM_API_KEY`。开发时也可通过环境变量覆盖配置。默认模型是 `gpt-5.6-luna`，默认地址是 OpenAI API；自定义 `LLM_BASE_URL` 的服务需要支持 Responses API 的流式事件。`LLM_MAX_OUTPUT_TOKENS` 控制每次回复的输出 token 上限，默认 `32768`，可在 `.env` 中改为所需的正整数；该上限包含模型推理 token。`/health` 和 `/docs` 可用于检查后端启动状态。
+
+`LLM_SYSTEM_PROMPT` 可在 `.env` 中调整芙宁娜的说话风格和回答规则；未设置时使用代码中的默认提示词。修改 `.env` 后需重启后端。
 
 ## 聊天协议
 
@@ -20,7 +22,19 @@ uv run uvicorn app.main:app --reload --port 8000
 
 返回 `text/event-stream`，事件顺序为 `message.start`（包含 `messageId`）、多个 `message.delta`（包含 `text`）、`message.done`。生成失败时发送 `error`（包含 `code` 和 `message`），不再发送 `message.done`。客户端中断连接时，后端会取消上游流。
 
-`session_id` 不保存会话。构建会生成 `dist/ai/articles.json` 和公开文章正文；服务端通过 `FURINAFANS_CONTENT_DIR` 读取它们，本地从 `services/furinabot` 运行时默认使用 `../../dist/ai`，生产环境可设为 `/var/www/Furinafans/ai`。草稿和密码文章均不进入索引。页面标题和 URL 不被当作可信正文。没有向量库、数据库或 Agent Tool。密钥只在服务端使用，`.env` 已被 Git 忽略。
+`session_id` 不保存会话。构建会生成 `dist/ai/articles.json` 和公开文章正文；服务端通过 `FURINAFANS_CONTENT_DIR` 读取它们，本地从 `services/furinabot` 运行时默认使用 `../../dist/ai`，生产环境可设为 `/var/www/Furinafans/ai`。草稿和密码文章均不进入索引。页面标题和 URL 不被当作可信正文。密钥只在服务端使用，`.env` 已被 Git 忽略。
+
+## 检索层
+
+构建还会从公开文章 JSON 生成 `dist/ai/chunks.json`，chunk 带稳定 ID、文章 ID、标题、URL、章节、标签和日期。当前文章问题继续直接使用正文；文章目录问题使用 metadata；跨文章问题从 chunk 做关键词检索，并在向量缓存可用时合并向量结果、重新排序，最多送入 5 段。SSE 会发送 `retrieval.start`、`retrieval.result` 和 `message.sources`，前端据此展示检索状态与来源链接。
+
+可选的 embedding 缓存在服务端独立维护。设置 `EMBEDDING_API_KEY`（未设置时使用 `LLM_API_KEY`）、`EMBEDDING_BASE_URL`、`EMBEDDING_MODEL` 后，在 `services/furinabot` 运行：
+
+```bash
+uv run python -m app.rebuild_vectors
+```
+
+默认 SQLite 路径为 `data/vectors.sqlite3`，可由 `FURINABOT_VECTOR_DB` 覆盖。命令仅为新增或变化的 chunk 重新生成 embedding，并删除已移除的 chunk。每次站点部署新文章索引后运行此命令；向量服务不可用时，聊天会自动回退关键词检索。向量缓存是文章 JSON 的派生数据，不应手工维护。
 
 ```bash
 uv run pytest -q

@@ -36,6 +36,11 @@ const markdown = $derived(renderMarkdown(message.content));
 	<div class="assistant-avatar" aria-hidden="true">✦</div>
 	<div class="assistant-body">
 		<div class="assistant-name">FURINA</div>
+		{#if message.retrievalCount === null}
+			<div class="retrieval-status">📚 正在检索 FurinaFans</div>
+		{:else if typeof message.retrievalCount === "number"}
+			<div class="retrieval-status">📚 找到 {message.retrievalCount} 个相关片段</div>
+		{/if}
 		{#if message.content}
 			<div class="assistant-markdown">{@html markdown}</div>
 		{:else if message.status !== "error"}
@@ -46,6 +51,14 @@ const markdown = $derived(renderMarkdown(message.content));
 		{/if}
 		{#if message.status === "streaming" && message.content}
 			<span class="stream-cursor" aria-label="正在生成"></span>
+		{/if}
+		{#if message.sources?.length}
+			<div class="message-sources">
+				<strong>Sources</strong>
+				{#each [...new Map(message.sources.map((source) => [source.url, source])).values()] as source (source.url)}
+					<a href={source.url}>{source.title}</a>
+				{/each}
+			</div>
 		{/if}
 	</div>
 </div>

@@ -86,6 +86,10 @@ body:has(.floating-controls-container) .furina-bot .furina-launcher { bottom: 21
 .furina-bot .stream-cursor { display: inline-block; width: 0.3125rem; height: 0.8125rem; margin-left: 0.125rem; vertical-align: -0.125rem; background: #729caf; animation: furinabot-cursor-blink 0.8s steps(2) infinite; }
 @keyframes furinabot-cursor-blink { 50% { opacity: 0; } }
 .furina-bot .message-error { display: block; margin-top: 0.3125rem; color: #b85454; font-size: 0.6875rem; }
+.furina-bot .retrieval-status { margin: 0.25rem 0 0.5rem; color: #527b91; font-size: 0.6875rem; }
+.furina-bot .message-sources { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; margin-top: 0.75rem; color: #527b91; font-size: 0.6875rem; }
+.furina-bot .message-sources strong { flex-basis: 100%; }
+.furina-bot .message-sources a { color: #316d93; text-decoration: underline; }
 
 .furina-bot .furina-composer { flex: none; padding: 0.8125rem 0.9375rem 0.75rem; background: #fffefa; border-top: 1px solid var(--furina-border); }
 .furina-bot .composer-field { position: relative; display: flex; align-items: flex-end; background: white; border: 1px solid #d7e3e5; border-radius: 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
