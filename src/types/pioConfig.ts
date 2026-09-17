@@ -73,3 +73,13 @@ export type Live2DWidgetConfig = {
 		mobileBreakpoint?: number; // 移动端断点，默认 768
 	};
 };
+
+// 芙宁娜模型独立使用 Pixi/Cubism 加载，避免旧看板娘运行时解析失败。
+export type FurinaLive2DConfig = {
+	enable: boolean;
+	path: string;
+	position: "bottom-left" | "bottom-right";
+	size: { width: number; height: number };
+	scale: number;
+	responsive: { hideOnMobile: boolean; mobileBreakpoint: number };
+};

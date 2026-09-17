@@ -1,0 +1,127 @@
+---
+import type { FurinaLive2DConfig } from "@/types/pioConfig";
+import { url } from "@/utils/url-utils";
+
+interface Props {
+	config: FurinaLive2DConfig;
+}
+
+const { config } = Astro.props;
+---
+
+<div
+	id="furina-live2d"
+	class:list={["furina-live2d", config.position === "bottom-right" && "is-right"]}
+	style={`--furina-width: ${config.size.width}px; --furina-height: ${config.size.height}px;`}
+	data-path={url(config.path)}
+	data-width={config.size.width}
+	data-height={config.size.height}
+	data-scale={config.scale}
+	data-hide-on-mobile={config.responsive.hideOnMobile}
+	data-mobile-breakpoint={config.responsive.mobileBreakpoint}
+	role="img"
+	aria-label="芙宁娜 Live2D 看板娘"
+>
+	<span class="furina-live2d-status" hidden></span>
+</div>
+
+<script>
+	import * as PIXI from "pixi.js";
+
+	// Cubism Core 为 Live2D 官方托管的专有运行时，不将它复制进仓库。
+	const CORE_URL =
+		"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js";
+	const container = document.getElementById("furina-live2d");
+	let loading: Promise<void> | undefined;
+
+	function loadCore(): Promise<void> {
+		if ("Live2DCubismCore" in window) return Promise.resolve();
+		return new Promise((resolve, reject) => {
+			const script = document.createElement("script");
+			script.src = CORE_URL;
+			script.onload = () => resolve();
+			script.onerror = () => reject(new Error("Cubism Core 加载失败"));
+			document.head.appendChild(script);
+		});
+	}
+
+	async function loadFurina(): Promise<void> {
+		if (!container) return;
+		const status = container.querySelector<HTMLElement>(".furina-live2d-status");
+		const width = Number(container.dataset.width);
+		const height = Number(container.dataset.height);
+		try {
+			await loadCore();
+			// Pixi 插件在导入时读取全局 PIXI，因此先挂载，再按需加载插件。
+			(window as Window & { PIXI?: typeof PIXI }).PIXI = PIXI;
+			const { Live2DModel } = await import("pixi-live2d-display/cubism4");
+			const app = new PIXI.Application({
+				width,
+				height,
+				backgroundAlpha: 0,
+				resolution: Math.min(window.devicePixelRatio || 1, 2),
+				autoDensity: true,
+			});
+			container.appendChild(app.view);
+			const model = await Live2DModel.from(container.dataset.path || "");
+			app.stage.addChild(model);
+			// 按模型自身画布尺寸等比缩放，并让人物落在容器底部。
+			model.scale.set(
+				Math.min((width - 16) / model.width, (height - 16) / model.height) *
+					Number(container.dataset.scale || 1),
+			);
+			model.x = (width - model.width) / 2;
+			model.y = height - model.height;
+		} catch (error) {
+			console.error("Failed to load Furina Live2D model:", error);
+			if (status) {
+				status.textContent = "芙宁娜加载失败";
+				status.hidden = false;
+			}
+		}
+	}
+
+	function updateVisibility(): void {
+		if (!container) return;
+		const hideOnMobile = container.dataset.hideOnMobile === "true";
+		const breakpoint = Number(container.dataset.mobileBreakpoint || 768);
+		const visible = !hideOnMobile || window.innerWidth > breakpoint;
+		container.hidden = !visible;
+		if (visible) loading ??= loadFurina();
+	}
+
+	updateVisibility();
+	window.addEventListener("resize", updateVisibility);
+</script>
+
+<style>
+	.furina-live2d {
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		z-index: 999;
+		width: var(--furina-width);
+		height: var(--furina-height);
+		pointer-events: none;
+	}
+
+	.furina-live2d.is-right {
+		left: auto;
+		right: 0;
+	}
+
+	.furina-live2d[hidden] {
+		display: none;
+	}
+
+	.furina-live2d-status {
+		position: absolute;
+		bottom: 12px;
+		left: 12px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: var(--card-bg, #fff);
+		color: var(--primary, #333);
+		font-size: 12px;
+	}
+</style>

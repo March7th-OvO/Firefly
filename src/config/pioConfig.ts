@@ -1,4 +1,8 @@
-import type { Live2DWidgetConfig, SpineModelConfig } from "../types/pioConfig";
+import type {
+	FurinaLive2DConfig,
+	Live2DWidgetConfig,
+	SpineModelConfig,
+} from "../types/pioConfig";
 
 // Spine 看板娘配置
 export const spineModelConfig: SpineModelConfig = {
@@ -182,4 +186,14 @@ export const live2dWidgetConfig: Live2DWidgetConfig = {
 		// 移动端断点
 		mobileBreakpoint: 768,
 	},
+};
+
+// 芙宁娜使用独立的 Pixi/Cubism 加载通道，保留上方旧模型的配置与切换功能。
+export const furinaLive2dConfig: FurinaLive2DConfig = {
+	enable: true,
+	path: "/pio/models/live2d/Furina/Furina.model3.json",
+	position: "bottom-left",
+	size: { width: 240, height: 300 },
+	scale: 1,
+	responsive: { hideOnMobile: true, mobileBreakpoint: 768 },
 };

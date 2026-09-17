@@ -34,9 +34,11 @@ onDestroy(() => {
 <div class="furina-bot">
 	{#if !open}
 		<button class="furina-launcher" type="button" onclick={openPanel} aria-label="打开 FurinaBot">
+			<span class="launcher-copy" aria-hidden="true">
+				<span>问问 Furina</span>
+				<span class="launcher-arrow">↗</span>
+			</span>
 			<span class="launcher-spark" aria-hidden="true">✦</span>
-			<span>问问 Furina</span>
-			<span class="launcher-arrow" aria-hidden="true">↗</span>
 		</button>
 	{:else}
 		<ChatPanel {chat} {closing} onClose={closePanel} />

@@ -10,15 +10,26 @@
 }
 
 .furina-bot .furina-launcher {
-	position: fixed; right: 1rem; bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;
-	height: 3.625rem; padding: 0 1.25rem 0 0.8125rem; color: white; font-size: 0.8125rem;
+	position: fixed; right: 1rem; bottom: 1rem; display: flex; align-items: center; justify-content: flex-end;
+	box-sizing: border-box; width: 3.625rem; height: 3.625rem; padding: 0 0.625rem; overflow: hidden; color: white; font-size: 0.8125rem;
 	font-weight: 600; letter-spacing: 0.06em; background: #315d79; border: 1px solid #a6c3cf;
 	border-radius: 1.875rem; box-shadow: 0 0.875rem 2.125rem rgba(38, 81, 104, 0.29); cursor: pointer;
-	transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+	transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease, background 0.3s ease;
 }
-.furina-bot .furina-launcher:hover { background: #254d68; box-shadow: 0 1.125rem 2.5rem rgba(38, 81, 104, 0.35); transform: translateY(-0.1875rem); }
-.furina-bot .launcher-spark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; color: #d8eaf0; font-size: 1.25rem; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; }
-.furina-bot .launcher-arrow { margin-left: 0.3125rem; color: #adcbd9; font-size: 1.0625rem; }
+.furina-bot .furina-launcher:hover, .furina-bot .furina-launcher:focus-visible {
+	width: 11.5rem; background: #254d68; box-shadow: 0 1.125rem 2.5rem rgba(38, 81, 104, 0.35); transform: translateY(-0.1875rem);
+}
+/* 固定右侧图标，让入口沿右边缘向左展开；文案随宽度渐显。 */
+.furina-bot .launcher-copy {
+	display: flex; flex: 1; align-items: center; justify-content: center; gap: 0.3125rem; min-width: 0;
+	white-space: nowrap; opacity: 0; transform: translateX(0.5rem);
+	transition: opacity 0.2s ease, transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.furina-bot .furina-launcher:hover .launcher-copy, .furina-bot .furina-launcher:focus-visible .launcher-copy {
+	opacity: 1; transform: translateX(0);
+}
+.furina-bot .launcher-spark { box-sizing: border-box; display: grid; flex: none; place-items: center; width: 2.25rem; height: 2.25rem; color: #d8eaf0; font-size: 1.25rem; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; }
+.furina-bot .launcher-arrow { color: #adcbd9; font-size: 1.0625rem; }
 
 /* 文章页已有五个悬浮控件，入口固定在控件列上方。 */
 body:has(.floating-controls-container) .furina-bot .furina-launcher { bottom: 21.5rem; }
@@ -112,4 +123,5 @@ body:has(.floating-controls-container) .furina-bot .furina-launcher { bottom: 21
 @media (prefers-reduced-motion: reduce) {
 	.furina-bot .furina-panel, .furina-bot .message-row, .furina-bot .typing-indicator span, .furina-bot .stream-cursor { animation: none; }
 	.furina-bot .furina-launcher, .furina-bot .suggestion-list button { transition: none; }
+	.furina-bot .launcher-copy { transition: none; }
 }

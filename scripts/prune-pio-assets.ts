@@ -6,13 +6,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { glob } from "glob";
-import { live2dWidgetConfig, spineModelConfig } from "../src/config";
+import {
+	furinaLive2dConfig,
+	live2dWidgetConfig,
+	spineModelConfig,
+} from "../src/config";
 import { resolveSiteRoot } from "./site-root";
 
 // Cloudflare Pages 上产物在 dist/client，本地在 dist，统一对准真实根目录
 const DIST_DIR = resolveSiteRoot();
 
-// 看板娘资源根目录（相对 dist/），两种看板娘都关掉时整个删掉
+// 看板娘资源根目录（相对 dist/），所有看板娘都关掉时整个删掉
 const PIO_ROOT = "pio";
 // Live2D 专属资源
 const LIVE2D_ASSETS = ["pio/models/live2d"];
@@ -60,23 +64,25 @@ async function findLive2dChunks(): Promise<string[]> {
 
 async function main() {
 	const live2dEnabled = live2dWidgetConfig.enable;
+	const furinaEnabled = furinaLive2dConfig.enable;
 	const spineEnabled = spineModelConfig.enable;
 
-	if (live2dEnabled && spineEnabled) {
-		console.log(
-			"🎎 Live2D + Spine models are both enabled, keeping all pio assets",
-		);
+	if (live2dEnabled && furinaEnabled && spineEnabled) {
+		console.log("🎎 All mascot models are enabled, keeping all pio assets");
 		return;
 	}
 
 	console.log("🎎 Pruning unused mascot assets in dist/...");
 
 	const targets: string[] = [];
-	if (!live2dEnabled && !spineEnabled) {
+	if (!live2dEnabled && !furinaEnabled && !spineEnabled) {
 		// 都没启用，README 之类的杂项也没必要留
 		targets.push(PIO_ROOT);
 	} else {
-		if (!live2dEnabled) targets.push(...LIVE2D_ASSETS);
+		if (!live2dEnabled && !furinaEnabled) targets.push(...LIVE2D_ASSETS);
+		// 两条 Live2D 通道独立启用，只裁剪当前未使用的模型目录。
+		else if (!live2dEnabled) targets.push("pio/models/live2d/snow_miku");
+		else if (!furinaEnabled) targets.push("pio/models/live2d/Furina");
 		if (!spineEnabled) targets.push(...SPINE_ASSETS);
 	}
 	if (!live2dEnabled) targets.push(...(await findLive2dChunks()));
