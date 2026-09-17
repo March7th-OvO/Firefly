@@ -26,6 +26,7 @@ import remarkAdmonitionToBlockquoteCallout from "remark-admonition-to-blockquote
 import remarkDirective from "remark-directive"; /* Handle directives */
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
+import { furinaBotDevProxy } from "./services/furinabot/dev-proxy.mjs";
 import {
 	commentConfig,
 	dynamicConfig,
@@ -357,6 +358,7 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 		server: {
+			proxy: furinaBotDevProxy,
 			watch: {
 				ignored: ["**/package/**", "**/Firefly-docs/**"],
 			},

@@ -1,0 +1,37 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "Furina.moc3",
+		"Textures": [
+			"Furina.8192/texture_00.png"
+		],
+		"Physics": "Furina.physics3.json",
+		"DisplayInfo": "Furina.cdi3.json",
+		"Expressions": [
+			{ "Name": "neutral", "File": "Exp/-_-.exp3.json" },
+			{ "Name": "surprised", "File": "Exp/0_0.exp3.json" },
+			{ "Name": "pout", "File": "Exp/BuOu.exp3.json" },
+			{ "Name": "shy", "File": "Exp/HaiXiu.exp3.json" },
+			{ "Name": "disdain", "File": "Exp/HeiLian.exp3.json" },
+			{ "Name": "happy", "File": "Exp/O.exp3.json" },
+			{ "Name": "sparkle", "File": "Exp/XingXing.exp3.json" }
+		]
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": [
+				"ParamMouthForm"
+			]
+		}
+	]
+}

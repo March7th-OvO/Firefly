@@ -1,0 +1,76 @@
+name: Deploy FurinaBot
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "services/furinabot/**"
+      - ".github/workflows/deploy-furinabot.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: furinabot-aliyun-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Python backend
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ALIYUN_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.ALIYUN_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload FurinaBot release
+        env:
+          ALIYUN_HOST: ${{ secrets.ALIYUN_HOST }}
+          ALIYUN_USER: ${{ secrets.ALIYUN_USER }}
+        run: |
+          set -euo pipefail
+
+          if [ "$ALIYUN_USER" != "deploy" ]; then
+            echo "ALIYUN_USER must be deploy for the restricted FurinaBot deployment path."
+            exit 1
+          fi
+
+          ssh "$ALIYUN_USER@$ALIYUN_HOST" \
+            'mkdir -p /home/deploy/furinabot-release && chmod 750 /home/deploy/furinabot-release'
+
+          rsync -az --delete \
+            --exclude='.env' \
+            --exclude='.venv/' \
+            --exclude='.cache/' \
+            --exclude='data/' \
+            services/furinabot/ \
+            "$ALIYUN_USER@$ALIYUN_HOST:/home/deploy/furinabot-release/"
+
+      - name: Deploy and verify FurinaBot
+        env:
+          ALIYUN_HOST: ${{ secrets.ALIYUN_HOST }}
+          ALIYUN_USER: ${{ secrets.ALIYUN_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh "$ALIYUN_USER@$ALIYUN_HOST" \
+            'sudo /usr/local/sbin/deploy-furinabot'
