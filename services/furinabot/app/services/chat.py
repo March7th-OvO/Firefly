@@ -7,6 +7,7 @@ from app.core.config import DEFAULT_SYSTEM_PROMPT
 from app.llm.base import LLMProvider
 from app.schemas.chat import ChatRequest
 from app.services.article import ArticleService
+from app.services.input_guard import AliyunInputGuard
 from app.services.retrieval import RetrievalService
 
 @dataclass
@@ -37,11 +38,13 @@ class ChatService:
         article_service: ArticleService | None = None,
         retrieval_service: RetrievalService | None = None,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+        input_guard: AliyunInputGuard | None = None,
     ) -> None:
         self.provider = provider
         self.article_service = article_service
         self.retrieval_service = retrieval_service
         self.system_prompt = system_prompt
+        self.input_guard = input_guard
 
     async def prepare(self, request: ChatRequest) -> ChatPlan:
         if not self.article_service:

@@ -12,6 +12,10 @@ uv run uvicorn app.main:app --reload --port 8000
 
 `LLM_SYSTEM_PROMPT` 可在 `.env` 中调整芙宁娜的说话风格和回答规则；未设置时使用代码中的默认提示词。修改 `.env` 后需重启后端。
 
+## 用户输入审核
+
+设置 `ALIYUN_GUARD_ENABLED=true` 后，FurinaBot 会在检索和模型请求前调用阿里云 AI 安全护栏的 `query_security_check_pro`。在后端 `.env` 中填写 `ALIBABA_CLOUD_ACCESS_KEY_ID`、`ALIBABA_CLOUD_ACCESS_KEY_SECRET`、`ALIYUN_GUARD_REGION` 和对应的 `ALIYUN_GUARD_ENDPOINT`。只发送用户消息正文，不发送文章或模型回复。阿里云建议 `pass` 时放行，`block`、`watch`、`mask` 时拒绝；审核服务失败或返回无法识别的结果时也不调用模型。启用后单条消息最多 2000 字。修改 `.env` 后重启后端。审核调用可能按量计费。
+
 ## 聊天协议
 
 `POST /api/agent/chat` 接受 JSON：

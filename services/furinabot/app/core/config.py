@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     embedding_api_key: str = ""
     embedding_base_url: str = ""
+    aliyun_guard_enabled: bool = False
+    alibaba_cloud_access_key_id: str = ""
+    alibaba_cloud_access_key_secret: str = ""
+    aliyun_guard_region: str = "cn-shanghai"
+    aliyun_guard_endpoint: str = "green-cip.cn-shanghai.aliyuncs.com"
 
     model_config = SettingsConfigDict(
         env_file=".env",

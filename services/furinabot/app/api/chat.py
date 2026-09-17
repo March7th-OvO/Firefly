@@ -11,6 +11,7 @@ from app.llm.openai_compatible import MissingAPIKeyError, OpenAICompatibleProvid
 from app.schemas.chat import ChatRequest
 from app.services.chat import ChatService, route_request
 from app.services.article import ArticleService
+from app.services.input_guard import AliyunInputGuard, InputGuardRejected, InputGuardTooLong, InputGuardUnavailable
 from app.services.retrieval import RetrievalService
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ def get_chat_service(settings: Annotated[Settings, Depends(get_settings)]) -> Ch
         ArticleService(settings.furinafans_content_dir),
         RetrievalService(settings.furinafans_content_dir, settings.furinabot_vector_db, settings),
         system_prompt=settings.llm_system_prompt,
+        input_guard=AliyunInputGuard(settings) if settings.aliyun_guard_enabled else None,
     )
 
 
@@ -33,9 +35,10 @@ async def chat(
     request: ChatRequest,
     service: Annotated[ChatService, Depends(get_chat_service)],
 ) -> AsyncIterable[ServerSentEvent]:
-    yield ServerSentEvent(event="message.start", data={"messageId": str(uuid4())})
-
     try:
+        if service.input_guard:
+            await service.input_guard.check(request.message)
+        yield ServerSentEvent(event="message.start", data={"messageId": str(uuid4())})
         searching = service.retrieval_service is not None and route_request(
             request.message, bool(request.context and request.context.article_id)
         ) == "retrieval"
@@ -50,6 +53,16 @@ async def chat(
             yield ServerSentEvent(event="message.delta", data={"text": text})
         if plan.sources:
             yield ServerSentEvent(event="message.sources", data={"sources": plan.sources})
+    except InputGuardRejected:
+        yield ServerSentEvent(event="error", data={"code": "input_blocked", "message": "这条消息未通过安全审核，请换一种方式提问。"})
+        return
+    except InputGuardTooLong:
+        yield ServerSentEvent(event="error", data={"code": "input_too_long", "message": "消息超过 2000 字，请缩短后重试。"})
+        return
+    except InputGuardUnavailable:
+        logger.warning("Input guard unavailable; request was not sent to the model")
+        yield ServerSentEvent(event="error", data={"code": "guard_unavailable", "message": "安全审核暂时不可用，请稍后重试。"})
+        return
     except MissingAPIKeyError as error:
         yield ServerSentEvent(
             event="error",

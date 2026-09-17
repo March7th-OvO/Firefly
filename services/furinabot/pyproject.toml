@@ -8,6 +8,7 @@ dependencies = [
   "uvicorn>=0.30,<1",
   "pydantic-settings>=2,<3",
   "openai>=2,<3",
+  "alibabacloud-green20220302>=3.2.4,<4",
 ]
 
 [dependency-groups]

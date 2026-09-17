@@ -9,6 +9,7 @@ from app.llm.base import LLMProvider
 from app.llm.openai_compatible import OpenAICompatibleProvider
 from app.main import app
 from app.services.chat import ChatService
+from app.services.input_guard import InputGuardRejected, InputGuardUnavailable
 
 
 class FakeProvider(LLMProvider):
@@ -94,3 +95,45 @@ def test_blank_message_is_rejected() -> None:
         response = client.post("/api/agent/chat", json={"message": "   "})
 
     assert response.status_code == 422
+
+
+def test_input_guard_blocks_before_model_call() -> None:
+    class BlockingGuard:
+        async def check(self, message: str) -> None:
+            assert message == "危险输入"
+            raise InputGuardRejected()
+
+    class UnexpectedProvider(LLMProvider):
+        async def stream(self, message: str, system_prompt: str) -> AsyncIterator[str]:
+            raise AssertionError("blocked input reached the model")
+            yield ""
+
+    app.dependency_overrides[get_chat_service] = lambda: ChatService(
+        UnexpectedProvider(), input_guard=BlockingGuard()
+    )
+    try:
+        with TestClient(app) as client:
+            response = client.post("/api/agent/chat/", json={"message": "危险输入"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert [event for event, _ in parse_events(response.text)] == ["error"]
+    assert parse_events(response.text)[0][1]["code"] == "input_blocked"
+
+
+def test_input_guard_failure_does_not_call_model() -> None:
+    class FailingGuard:
+        async def check(self, message: str) -> None:
+            raise InputGuardUnavailable()
+
+    app.dependency_overrides[get_chat_service] = lambda: ChatService(
+        FakeProvider(), input_guard=FailingGuard()
+    )
+    try:
+        with TestClient(app) as client:
+            response = client.post("/api/agent/chat/", json={"message": "你好"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert [event for event, _ in parse_events(response.text)] == ["error"]
+    assert parse_events(response.text)[0][1]["code"] == "guard_unavailable"
