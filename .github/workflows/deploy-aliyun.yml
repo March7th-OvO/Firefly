@@ -58,6 +58,8 @@ jobs:
           ALIYUN_USER: ${{ secrets.ALIYUN_USER }}
         run: |
           rsync -az --delete \
-            --chmod=D755,F644 \
-            dist/ \
-            "$ALIYUN_USER@$ALIYUN_HOST:/var/www/Furinafans/"
+          --no-owner \
+          --no-group \
+          --chmod=D755,F644 \
+          dist/ \
+          "$ALIYUN_USER@$ALIYUN_HOST:/var/www/Furinafans/"
